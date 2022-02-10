@@ -3,7 +3,7 @@ const char* defaultSettings = R""""([DISPLAY]
 ; Additional FOV value. 20 seems good for most cases.
 FOVAdditional = 0.0
 
-; Fixes the incorrect aspect ratio when playing in ultrawide resolutions, 
+; Fixes the incorrect aspect ratio when playing in ultrawide resolutions,
 ; preventing the image from being cut off and the HUD appearing off-screen.
 ; Only tested in 21:9.
 FixUltraWideAspectRatio = true
