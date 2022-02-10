@@ -1,5 +1,6 @@
 #pragma once
-const char* defaultSettings = R""""([DISPLAY]
+const char* defaultSettings = R""""(
+[DISPLAY]
 ; Additional FOV value. 20 seems good for most cases.
 FOVAdditional = 0.0
 
@@ -55,7 +56,7 @@ RememberWindowPos = false
 [MISC]
 ; Path to DLL to wrap, comment or leave empty to wrap system DLL
 ; (only set this if you need re4_tweaks to 'chain-load' another DLL that makes use of the same filename)
-;WrappedDLLPath = 
+;WrappedDLLPath =
 
 ; Unlocks the JP-only classic camera angles during Ashley's segment.
 AshleyJPCameraAngles = false
@@ -164,4 +165,5 @@ IgnoreFPSWarning = false
 [IMGUI]
 ; Scale the font used in the configuration menu.
 ; Min 1.0, max 1.3.
-FontSize = 1.000)"""";
+FontSize = 1.000
+)"""";

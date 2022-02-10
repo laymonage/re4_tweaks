@@ -36,10 +36,7 @@ jobs:
       - name: Create default configuration file
         shell: bash
         run: |
-          awk 'NR > 1 { \
-            if (NR == 2) { print substr($0, 37); } \
-            else { gsub(")\"\"\"\";", "", $0); print $0 } \
-          }' settings/settings_string.h > dinput8.ini
+          head -n -1 settings/settings_string.h | tail -n +3 > dinput8.ini
 
       - name: Upload
         uses: actions/upload-artifact@v2
