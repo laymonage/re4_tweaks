@@ -34,7 +34,7 @@ void NowLoadingOff_Hook()
 // Apparently they thought  it only handled chests that are opening, and applied GlobalPtr()->deltaTime_70 to correct the speed at higher fps,
 // but they also applied it to the section of the function that sets up the position of boxes that are already open. This means that open chests would
 // only by open half-way through at 60 fps, and even less at higher fps.
-// Instead of hooking every single wrong multiplication here (there are many), we just temporarily 
+// Instead of hooking every single wrong multiplication here (there are many), we just temporarily
 // overwrite deltaTime_70 itself to 1 for the duration of the function, and restore it once it is done.
 void(__cdecl* OpenBoxMain_orig)(int type, bool openedFlag, __int16 seId, int smdId0, int smdId1, int itemAtNo0);
 void __cdecl OpenBoxMain_hook(int type, bool openedFlag, __int16 seId, int smdId0, int smdId1, int itemAtNo0)
@@ -67,7 +67,7 @@ void re4t::init::FrameRateFixes()
 				void operator()(injector::reg_pack& regs)
 				{
 					double vanillaSub = 10.0;
-					
+
 					if (re4t::cfg->bFixFallingItemsSpeed)
 					{
 						double newSub = GlobalPtr()->deltaTime_70 * vanillaSub;
@@ -144,8 +144,8 @@ void re4t::init::FrameRateFixes()
 						_asm {fmul vanillaMulti}
 					}
 				}
-			}; 
-			
+			};
+
 			// First 3
 			pattern = hook::pattern("DC 0D ? ? ? ? E8 ? ? ? ? 66 89 87");
 			pattern.count(3).for_each_result([&](hook::pattern_match match) {
@@ -494,7 +494,7 @@ void re4t::init::FrameRateFixes()
 					}
 				}
 			}
-		}; 
+		};
 
 		pattern.count(2).for_each_result([&](hook::pattern_match match) {
 			injector::MakeInline<r202_r20e_openBox_main_hook_new_timer>(match.get<uint32_t>(0), match.get<uint32_t>(5));
@@ -519,7 +519,7 @@ void re4t::init::FrameRateFixes()
 				}
 			}
 		};
-		
+
 		pattern.count(2).for_each_result([&](hook::pattern_match match) {
 			injector::MakeInline<r326_r51b_openBox_main_hook>(match.get<uint32_t>(0), match.get<uint32_t>(6));
 			injector::MakeInline<r326_r51b_openBox_main_hook>(match.get<uint32_t>(23), match.get<uint32_t>(29));
@@ -557,7 +557,7 @@ void re4t::init::FrameRateFixes()
 			injector::MakeInline<r326_r51b_openBox_main_hook_new_timer>(match.get<uint32_t>(0), match.get<uint32_t>(5));
 		});
 
-		// r20d_openDrawer_main 
+		// r20d_openDrawer_main
 		pattern = hook::pattern("D9 05 ? ? ? ? 53 51 8D 45 ? D9 1C ? 50 8D 4D");
 		struct r20d_openDrawer_main_hook
 		{
@@ -778,7 +778,7 @@ void re4t::init::FrameRateFixes()
 		// OpenBoxMain
 		pattern = hook::pattern("E8 ? ? ? ? 83 C4 18 5D E9 ? ? ? ? 3D ? ? ? ? 75 1A 6A FF 6A 36");
 		ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), OpenBoxMain_orig);
-		InjectHook(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), OpenBoxMain_hook, PATCH_JUMP);
+		InjectHook(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), OpenBoxMain_hook, HookType::Jump);
 	}
 
 	// Walls/etc/etc
@@ -1011,7 +1011,7 @@ void re4t::init::FrameRateFixes()
 			}
 		}; injector::MakeInline<R31bExecFallRoom_hook>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5));
 
-		// cR31CDoor::close 
+		// cR31CDoor::close
 		pattern = hook::pattern("D9 05 ? ? ? ? 80 48 ? ? 8B 46 ? 80 48 ? ? D9 5E");
 		struct cR31CDoor__close_hook
 		{
@@ -1029,8 +1029,8 @@ void re4t::init::FrameRateFixes()
 					_asm {fld vanillaNum}
 				}
 			}
-		}; injector::MakeInline<cR31CDoor__close_hook>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));	
-		
+		}; injector::MakeInline<cR31CDoor__close_hook>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
+
 		// r327_DoorOpen
 		pattern = hook::pattern("DC 05 ? ? ? ? D9 9E ? ? ? ? E8 ? ? ? ? D9 05 ? ? ? ? 83 C4 ? D8 96");
 		struct r327_DoorOpen_hook
@@ -1168,7 +1168,7 @@ void re4t::init::FrameRateFixes()
 				}
 			}
 		}; injector::MakeInline<cR50fDoor__close_hook_2>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
-		
+
 		// R50fExecCageMain_mb
 		pattern = hook::pattern("DE CA D9 C9 DC 35 ? ? ? ? DE E9 D9 5D ? D9");
 		struct R50fExecCageMain_mb_hook_1
@@ -1187,8 +1187,8 @@ void re4t::init::FrameRateFixes()
 					_asm {fdiv vanillaDiv}
 				}
 			}
-		}; 
-		
+		};
+
 		injector::MakeInline<R50fExecCageMain_mb_hook_1>(pattern.count(6).get(0).get<uint32_t>(4), pattern.count(6).get(0).get<uint32_t>(10));
 		injector::MakeInline<R50fExecCageMain_mb_hook_1>(pattern.count(6).get(1).get<uint32_t>(4), pattern.count(6).get(1).get<uint32_t>(10));
 		injector::MakeInline<R50fExecCageMain_mb_hook_1>(pattern.count(6).get(2).get<uint32_t>(4), pattern.count(6).get(2).get<uint32_t>(10));
@@ -1408,7 +1408,7 @@ void re4t::init::FrameRateFixes()
 			}
 		}; injector::MakeInline<r305_ShutterCtrl_hook_2>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
-		// cR305Shutter::open 
+		// cR305Shutter::open
 		pattern = hook::pattern("DC 05 ? ? ? ? D9 98 ? ? ? ? 8B 4E 04 D9 46 14");
 		struct cR305Shutter__open_hook
 		{
@@ -1584,12 +1584,12 @@ void re4t::init::FrameRateFixes()
 	auto pattern = hook::pattern("8B 4F 08 50 8D 55 ? 52 89 4D ? E8 ? ? ? ?"); // AddOtModelPosRadius
 	auto caller = pattern.count(2).get(1).get<uint8_t>(0xB);
 	ReadCall(caller, collision_sphere_hexahedron);
-	InjectHook(caller, collision_sphere_hexahedron_Hook, PATCH_CALL);
+	InjectHook(caller, collision_sphere_hexahedron_Hook, HookType::Call);
 
 	pattern = hook::pattern("39 91 80 84 00 00 0F 85 ? ? ? ? E8 ? ? ? ?"); // gameStageInit
 	caller = (uint8_t*)injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(0xC)).as_int();
 	ReadCall(caller, NowLoadingOff);
-	InjectHook(caller, NowLoadingOff_Hook, PATCH_JUMP);
+	InjectHook(caller, NowLoadingOff_Hook, HookType::Jump);
 
 	pattern = hook::pattern("D8 D1 DF E0 DD D9 F6 C4 41 75 ? D9 C0 D9 EE DA E9 DF E0 F6 C4 44 7A");
 

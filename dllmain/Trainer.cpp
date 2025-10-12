@@ -154,7 +154,7 @@ void HotkeySlotPressed(int slotIdx, bool forceUseWepID = false)
 					{
 						re4t::cfg->iWeaponHotkeyWepIds[slotIdx] = ItemPiece->pItem_24->id_0;
 						re4t::cfg->WriteSettings(true);
-						
+
 						// fall-thru to weapon switch code below, acts as an indicator that binding was set
 					}
 				}
@@ -629,7 +629,7 @@ void Trainer_Init()
 		FlagPatch patch_em39_R1_br_T_Kick(globals->flags_DEBUG_0_60, uint32_t(Flags_DEBUG::DBG_NO_DEATH2));
 		patch_em39_R1_br_T_Kick.SetPatch(em39_R1_br_T_Kick, { 0xC3 });
 		flagPatches.push_back(patch_em39_R1_br_T_Kick);
-		
+
 		// em39_R1_br_T_LowKick
 		pattern = hook::pattern("55 8B EC 57 8B 7D 08 66 83 BF ? ? ? ? ? 7E 72");
 		auto em39_R1_br_T_LowKick = pattern.count(1).get(0).get<uint8_t>(0);
@@ -811,7 +811,7 @@ void Trainer_Init()
 				case AshleyState::Default:
 					break;
 				}
-				
+
 				// Code we replaced
 				if (FlagIsSet(GlobalPtr()->flags_STATUS_0_501C, uint32_t(Flags_STATUS::STA_SUB_ASHLEY)))
 					regs.ef &= ~(1 << regs.zero_flag);
@@ -986,7 +986,7 @@ void Trainer_Init()
 		// Hook cameraHitCheck to disable hit detection
 		auto pattern = hook::pattern("E8 ? ? ? ? 83 C4 20 84 C0 74 2A");
 		ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), cameraHitCheck_orig);
-		InjectHook(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), cameraHitCheck_hook, PATCH_JUMP);
+		InjectHook(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), cameraHitCheck_hook, HookType::Jump);
 
 		// Redirect m_direction_ratio_208 and m_depression_ratio_204 when using free cam
 		pattern = hook::pattern("D9 83 ? ? ? ? DA E9 89 85 ? ? ? ? DF E0");
@@ -1040,7 +1040,7 @@ void Trainer_Init()
 	// Hook DebugTrg stub to use our reimplemented version
 	{
 		auto pattern = hook::pattern("83 C4 18 6A 01 E8 ? ? ? ? 83 C4 04 3C 01");
-		InjectHook(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0x5)).as_int(), DebugTrg_hook, PATCH_JUMP);
+		InjectHook(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0x5)).as_int(), DebugTrg_hook, HookType::Jump);
 	}
 
 	// Hook GameAddPoint to override the Dynamic Difficulty Level
@@ -1097,7 +1097,7 @@ void Trainer_Update()
 	}
 
 	// Handle the player's collision
-	if (pl_atariInfoFlagSet && 
+	if (pl_atariInfoFlagSet &&
 		!FlagIsSet(GlobalPtr()->flags_DEBUG_0_60, uint32_t(Flags_DEBUG::DBG_PL_NOHIT)) &&
 		!re4t::cfg->bTrainerEnableFreeCam)
 	{
@@ -1369,7 +1369,7 @@ void Trainer_Update()
 			player->pos_94.y = *Y;
 			player->pos_94.z = *Z;
 
-			// Has to be set to false, or else the game won't read the new position. 
+			// Has to be set to false, or else the game won't read the new position.
 			// Will be automatically be set to true again once the loop reaches this function again.
 			FlagSet(GlobalPtr()->flags_STOP_0_170, uint32_t(Flags_STOP::SPF_PL), false);
 
@@ -1573,7 +1573,7 @@ void Trainer_ESP()
 
 							ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(screenpos.x, screenpos.y + EspOffsetY), ImVec2(screenpos.x + 100.0f * barScalex, screenpos.y + EspOffsetY + 10.0f), ImColor(105, 105, 105));
 							ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(screenpos.x, screenpos.y + EspOffsetY), ImVec2(screenpos.x + hp_percent * barScalex, screenpos.y + EspOffsetY + 10.0f), getHealthColor(hp_percent));
-						
+
 							EspOffsetY += 20.0f;
 						}
 						else // HP Text
@@ -1626,7 +1626,7 @@ void Trainer_RenderUI(int columnCount)
 
 	// EmMgr
 	ImGui_TrainerTabButton("##emmgr", "Em Manager", active, inactive, TrainerTab::EmMgr, ICON_FA_SNOWMAN, icn_color, IM_COL32_WHITE, btn_size);
-	
+
 	// ESP
 	ImGui_TrainerTabButton("##esp", "ESP", active, inactive, TrainerTab::ESP, ICON_FA_EYE, icn_color, IM_COL32_WHITE, btn_size);
 
@@ -1710,7 +1710,7 @@ void Trainer_RenderUI(int columnCount)
 				if (ImGui::Button("Save game"))
 				{
 					bCfgMenuOpen = false;
-					
+
 					PauseGame(false);
 
 					Game_ScheduleInMainThread([]() {bio4::CardSave(0, 1); });
@@ -1719,7 +1719,7 @@ void Trainer_RenderUI(int columnCount)
 				if (ImGui::Button("Open Merchant"))
 				{
 					bCfgMenuOpen = false;
-					
+
 					PauseGame(false);
 
 					Game_ScheduleInMainThread([]() {
@@ -1850,7 +1850,7 @@ void Trainer_RenderUI(int columnCount)
 				}
 				ImGui::EndDisabled();
 			}
-			
+
 			// Free camera
 			if ((OptionsFilter.PassFilter("Free Camera") && OptionsFilter.IsActive()) || !OptionsFilter.IsActive())
 			{
@@ -2702,7 +2702,7 @@ void Trainer_RenderUI(int columnCount)
 				ImGui::Checkbox("Show Em list", &re4t::cfg->bSideShowEmList);
 				ImGui::TextWrapped("Ems are listed from bottom to top, with the top one being the closes to the player, and the bottom one being the farthest.");
 				ImGui::Dummy(ImVec2(10, 10 * esHook._cur_monitor_dpi));
-				
+
 				ImGui::BeginDisabled(!re4t::cfg->bSideShowEmList);
 				ImGui::Checkbox("Only show ESL-spawned##side", &re4t::cfg->bSideOnlyShowESLSpawned);
 				ImGui::Checkbox("Show simplified names##side", &re4t::cfg->bSideShowSimpleNames);
@@ -2757,7 +2757,7 @@ void Trainer_RenderUI(int columnCount)
 				static auto AreaJmp = new UI_AreaJump();
 				AreaJmp->Render(false);
 			}
-				
+
 			// FilterTool
 			{
 				ImGui_ColumnSwitch();

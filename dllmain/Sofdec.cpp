@@ -143,8 +143,8 @@ void re4t::init::Sofdec()
 		// Hook both cSofdec::Initialize calls in routine 7 inside titleMain so we can play GC demo videos, if they exist in BIO4/movies
 		auto pattern = hook::pattern("E8 ? ? ? ? FE 46 ? E9 ? ? ? ? 68 ? ? ? ? E8 ? ? ? ? FE");
 		ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), cSofdec__Initialize_orig);
-		InjectHook(pattern.count(1).get(0).get<uint32_t>(0), cSofdec__Initialize_hook, PATCH_CALL);
-		InjectHook(pattern.count(1).get(0).get<uint32_t>(18), cSofdec__Initialize_hook, PATCH_CALL);
+		InjectHook(pattern.count(1).get(0).get<uint32_t>(0), cSofdec__Initialize_hook, HookType::Call);
+		InjectHook(pattern.count(1).get(0).get<uint32_t>(18), cSofdec__Initialize_hook, HookType::Call);
 
 		// Nop call to FadeKill that is messing with our custom fade
 		pattern = hook::pattern("E8 ? ? ? ? 68 ? ? ? ? 68 ? ? ? ? E8 ? ? ? ? A1 ? ? ? ? 83 C4 ? 53");
@@ -257,7 +257,7 @@ void re4t::init::Sofdec()
 						triggered = true;
 					}
 				}
-				else 
+				else
 				{
 					// Wait for the fade to finish before starting the video
 					if ((FadeWorkPtr(FADE_NO_SYSTEM)->be_flg_18 & FADE_BE_ALIVE) == 0) // Finished fade

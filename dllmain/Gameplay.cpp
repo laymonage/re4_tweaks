@@ -89,7 +89,7 @@ void ChicagoAmmoDropCheck() noexcept
 		bShouldDropChicagoAmmo = false;
 		return;
 	}
-	
+
 	int curChicagoAmmo = ItemMgr->num((ITEM_ID)EItemId::Bullet_45in_M);
 	bool rnd = GetRandomInt(0, 31) == 5; // 5/31 probability (16%)
 
@@ -208,7 +208,7 @@ void re4t::init::Gameplay()
 			{ 0x34, {7, 1, 1, 7}, {0, 0} },
 			{ 0xFFFF, {0, 0, 0, 0}, {0, 0} }
 		};
-		
+
 		pattern = hook::pattern("8B 0D ? ? ? ? F7 41 ? ? ? ? ? 74 ? 6A");
 		struct MerchantRoomInit_hook_chicagolvl
 		{
@@ -221,7 +221,7 @@ void re4t::init::Gameplay()
 		}; injector::MakeInline<MerchantRoomInit_hook_chicagolvl>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
 		/* <- Works, but it isn't really necessary. Meh.
-		* 
+		*
 		// Add new value to level_price
 		pattern = hook::pattern("C7 05 ? ? ? ? ? ? ? ? 0F B7 81 ? ? ? ? 8D");
 		static auto level_price = *pattern.count(1).get(0).get<LEVEL_PRICE(*)[16]>(6);
@@ -467,7 +467,7 @@ void re4t::init::Gameplay()
 		auto pattern = hook::pattern("83 C4 0C E8 ? ? ? ? D9 EE 8B 06 D9 9E 44 05 00 00");
 
 		ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(3)).as_int(), cPlayer__weaponInit);
-		InjectHook(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(3)).as_int(), cPlayer__weaponInit_Hook, PATCH_JUMP);
+		InjectHook(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(3)).as_int(), cPlayer__weaponInit_Hook, HookType::Jump);
 	}
 
 	// Disable Automatic Reload
@@ -512,7 +512,7 @@ void re4t::init::Gameplay()
 		}; injector::MakeInline<wep17_r2_set_joyFireTrig>(pattern.count(2).get(1).get<uint32_t>(0), pattern.count(2).get(1).get<uint32_t>(7));
 
 		pattern = hook::pattern("E8 ? ? ? ? 85 C0 74 ? 8B 8E D8 07 00 00 8B 49 34 E8 ? ? ? ? 84 C0 0F ? ? ? ? ? 8B");
-		struct wep17_r2_set_joyFireOn 
+		struct wep17_r2_set_joyFireOn
 		{
 			void operator()(injector::reg_pack& regs)
 			{

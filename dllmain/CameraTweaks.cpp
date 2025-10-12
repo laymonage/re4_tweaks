@@ -12,7 +12,7 @@ float* C_RANGE_1097;
 float* CamSmth__m_ratio_FC;
 
 float* fCameraPosX; // m_direction_ratio_208
-float* fCameraPosY; // m_depression_ratio_204 
+float* fCameraPosY; // m_depression_ratio_204
 
 float* wepPitch; // m3r.y
 
@@ -32,8 +32,8 @@ double CameraControl__getCameraPitch_hook()
 	if (isController())
 		return 0.0;
 
-	// We originally used fCameraPosY, but that value gets reset early in some cases, such as when using the knife, leading 
-	// to it always reading "0.0". This really makes me think this whole CameraControl::getCameraPitch() stuff either never got too far into the 
+	// We originally used fCameraPosY, but that value gets reset early in some cases, such as when using the knife, leading
+	// to it always reading "0.0". This really makes me think this whole CameraControl::getCameraPitch() stuff either never got too far into the
 	// game's development, or everything was stripped right after the GC release, with future changes not accounting for this legacy feature.
 	double angle = (*fMousePosY * 127.0f) / *C_RANGE_1097;
 
@@ -68,7 +68,7 @@ void __declspec(naked) knife_r3_set40_hook()
 
 	if (re4t::cfg->bCameraImprovements)
 	{
-		__asm 
+		__asm
 		{
 			popad
 			mov eax, 0x1 // Manipulate the test and jne instructions that comes a bit after this.
@@ -92,7 +92,7 @@ void __declspec(naked) knife_r3_set40_hook()
 void re4t::init::CameraTweaks()
 {
 	auto pattern = hook::pattern("E8 ? ? ? ? D9 5D EC D9 EE D9 45 EC");
-	InjectHook(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), CameraControl__getCameraPitch_hook, PATCH_JUMP);
+	InjectHook(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), CameraControl__getCameraPitch_hook, HookType::Jump);
 
 	pattern = hook::pattern("D9 05 ? ? ? ? D9 C0 DE FA D9 C9 74");
 	C_RANGE_1097 = (float*)*pattern.count(1).get(0).get<uint32_t>(2);
@@ -313,8 +313,8 @@ void re4t::init::CameraTweaks()
 			// Code we replaced
 			*(uint32_t*)(regs.esi + 0xFC) = 0x4020300;
 
-			if (re4t::cfg->bCameraImprovements 
-				&& re4t::cfg->bResetCameraWhenRunning 
+			if (re4t::cfg->bCameraImprovements
+				&& re4t::cfg->bResetCameraWhenRunning
 				&& !re4t::cfg->bUseMouseTurning
 				&& isKeyboardMouse())
 			{
@@ -350,7 +350,7 @@ void re4t::init::CameraTweaks()
 		}
 	}; injector::MakeInline<CamCtrlShoulderSetAimHook>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5));
 
-	// This section resets the camera X pos to 0 if we turn while walking. 
+	// This section resets the camera X pos to 0 if we turn while walking.
 	// Maybe useful for controllers(?), but it is getting in our way for KB/M.
 	pattern = hook::pattern("D9 15 ? ? ? ? D9 1D ? ? ? ? EB ? DD D8 A1");
 	struct PadReadXreset
@@ -397,7 +397,7 @@ void re4t::init::CameraTweaks()
 			}
 		}
 	}; injector::MakeInline<PadReadYAfterAimReset>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
-	
+
 	// Due to our getCameraPitch hook potentially returning values higher than 1.0/lower than -1.0, we have to
 	// make sure here that wepPitch is within bounds.
 	// Clamping it inside our getCameraPitch hook doesn't work, because PlWepLockRand does something weird to the value afterwards.
@@ -441,7 +441,7 @@ void re4t::init::CameraTweaks()
 			else // Vanilla behavior.
 			{
 				// The original code here was used just to clamp the fCameraPosY value.
-				// Since hacking around (while still leaving the option to enable/disable our changes on the fly) 
+				// Since hacking around (while still leaving the option to enable/disable our changes on the fly)
 				// proved to be a pain, we just replace everything with std::clamp. Seems to work fine.
 				*fCameraPosY = std::clamp(*fCameraPosY, -1.0f, 1.0f);
 			}

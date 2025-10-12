@@ -86,7 +86,7 @@ struct FileData
 			return false;
 
 		DWORD read = 0;
-		bool success = ReadFile(hFile, data, size, &read, nullptr) 
+		bool success = ReadFile(hFile, data, size, &read, nullptr)
 			&& read == size;
 
 		if (success)
@@ -463,7 +463,7 @@ bool cPlayer__keyReload_hook()
 {
 	bool ret = false;
 
-	if ((re4t::cfg->bAllowReloadWithoutAiming_kbm && isKeyboardMouse()) || 
+	if ((re4t::cfg->bAllowReloadWithoutAiming_kbm && isKeyboardMouse()) ||
 		(re4t::cfg->bAllowReloadWithoutAiming_controller && isController()))
 	{
 		bool isAiming = ((Key_btn_on() & (uint64_t)KEY_BTN::KEY_KAMAE) == (uint64_t)KEY_BTN::KEY_KAMAE);
@@ -561,13 +561,13 @@ void re4t::init::Misc()
 		auto pattern = hook::pattern("E8 ? ? ? ? 85 C0 74 ? 81 A6 ? ? ? ? ? ? ? ? C7 86 ? ? ? ? ? ? ? ? 5E");
 
 		ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), joyKamae_orig);
-		InjectHook(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), joyKamae_Hook, PATCH_JUMP);
+		InjectHook(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), joyKamae_Hook, HookType::Jump);
 
 		// cPlayer::keyReload -> Makes the game enter the reload routine if a condition is met.
 		pattern = hook::pattern("E8 ? ? ? ? 84 C0 74 3A 8B 86 ? ? ? ? 39 58 ? 74 ? 8B 40");
 
 		ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), cPlayer__keyReload_orig);
-		InjectHook(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), cPlayer__keyReload_hook, PATCH_JUMP);
+		InjectHook(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), cPlayer__keyReload_hook, HookType::Jump);
 
 		// PlReloadDirect is used to skip the camera change when you press the aim button (checked in cPlayer::isKamae)
 		pattern = hook::pattern("80 3D ? ? ? ? ? 74 ? 3C ? 74 ? 3C ? 74 ? B8 ? ? ? ? C3");
@@ -1315,7 +1315,7 @@ void re4t::init::Misc()
 		}; injector::MakeInline<SsItemExamine__move_SavecItem>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 		pattern = hook::pattern("68 84 00 02 00 51 53");
 		ReadCall(pattern.count(1).get(0).get<uint8_t>(13), MesSet);
-		InjectHook(pattern.count(1).get(0).get<uint32_t>(13), SsItemExamine__move_MesSet_hook, PATCH_CALL);
+		InjectHook(pattern.count(1).get(0).get<uint32_t>(13), SsItemExamine__move_MesSet_hook, HookType::Call);
 	}
 
 	// Allow physics to apply to tactical vest outfit
@@ -1364,7 +1364,7 @@ void re4t::init::Misc()
 		auto pattern = hook::pattern("0F B6 8E 56 06 00 00 83 C4 ? 50 51 E8");
 
 		ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0xC)).as_int(), GetEtcFlgPtr);
-		InjectHook(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0xC)).as_int(), GetEtcFlgPtr_Hook, PATCH_JUMP);
+		InjectHook(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0xC)).as_int(), GetEtcFlgPtr_Hook, HookType::Jump);
 
 		spd::log()->info("GetEtcFlgPtr hook applied");
 	}
@@ -1451,12 +1451,12 @@ void re4t::init::Misc()
 	// Item gets spawned by em31_R1_Die_Normal when r_no_2 == 4
 	// Some reason r_no_2 gets set to 4 twice, once immediately after death anim, before the cutscene starts (causing the early item spawn)
 	// And then later R332RocketShootEnd calls into cEm31::setDieCancel, which forces r_no_2 to 4 (seems to be part of the cutscene code)
-	// 
+	//
 	// We can patch out the first one by removing the r_no_2 increment call inside the r_no_2 == 3 block, which stops it from spawning early
 	// However GC (which doesn't have this issue) still seems to have the increment code, so this likely isn't fixing the root cause, but it's a workaround at least...
 	// Main issue could be the MotionMove check that r_no_2 == 3 runs before incrementing to 4 - maybe that only passed on GC once cutscene was over, but UHD passes immediately
 	// Need to check with GC debug and see if that also calls r_no_2 == 4 twice, and check what moment it actually increments it to 4...
-	// 
+	//
 	// More info at https://github.com/nipkownix/re4_tweaks/issues/331
 	{
 		auto pattern = hook::pattern("FE 86 FE 00 00 00 5B 5F 5E 5D C3 DD"); // "inc byte ptr [esi+0FEh]", 4EE833 in 1.1.0

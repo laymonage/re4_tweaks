@@ -122,7 +122,7 @@ namespace bio4 {
 	void(__cdecl* SceSleep)(uint32_t ctr);
 
 	void(__cdecl* QuakeExec)(uint32_t No, uint32_t Delay, int Time, float Scale, uint32_t Axis);
-  
+
 	BOOL(__cdecl* joyFireTrg)();
 	BOOL(__cdecl* joyFireOn)();
 
@@ -943,7 +943,7 @@ bool re4t::init::Game()
 			INIConfig_ptr = (INIConfig*)regs.esi;
 		}
 	}; injector::MakeInline<INIConfig_get>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
-	
+
 	// LastUsedDevice pointer
 	pattern = hook::pattern("A1 ? ? ? ? 85 C0 74 ? 83 F8 ? 74 ? 81 F9");
 	ptrLastUsedDevice = *pattern.count(1).get(0).get<uint32_t*>(1);
@@ -1044,7 +1044,7 @@ bool re4t::init::Game()
 	// (game doesn't store this in a global, so we need to capture it...)
 	pattern = hook::pattern("6A 0D 6A 01 6A 00 6A 00 68 BC 00 00 00 E8");
 	ReadCall(pattern.count(1).get(0).get<uint8_t>(0xD), mem_calloc);
-	InjectHook(pattern.count(1).get(0).get<uint8_t>(0xD), mem_calloc_TITLE_WORK_hook, PATCH_CALL);
+	InjectHook(pattern.count(1).get(0).get<uint8_t>(0xD), mem_calloc_TITLE_WORK_hook, HookType::Call);
 
 	// pointer to FadeWork
 	pattern = hook::pattern("68 ? ? ? ? E8 ? ? ? ? D9 EE D9 15 ? ? ? ? 83 C4 08 ");
@@ -1053,7 +1053,7 @@ bool re4t::init::Game()
 	// Mem_free call for TITLE_WORK, so we can set to nullptr once game frees it
 	pattern = hook::pattern("56 E8 ? ? ? ? 6A 01 E8 ? ? ? ? 68 C0 01 00 00");
 	ReadCall(pattern.count(1).get(0).get<uint8_t>(0x1), Mem_free);
-	InjectHook(pattern.count(1).get(0).get<uint8_t>(0x1), Mem_free_TITLE_WORK_hook, PATCH_CALL);
+	InjectHook(pattern.count(1).get(0).get<uint8_t>(0x1), Mem_free_TITLE_WORK_hook, HookType::Call);
 
 	// LightMgr pointer
 	pattern = hook::pattern("6A 00 53 6A 00 57 B9 ? ? ? ?");
@@ -1100,7 +1100,7 @@ bool re4t::init::Game()
 	pattern = hook::pattern("74 ? B9 ? ? ? ? E8 ? ? ? ? B9 ? ? ? ? E8 ? ? ? ? E8");
 	auto cSceSys__scheduler_thunk = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(17));
 	ReadCall(cSceSys__scheduler_thunk.as_int(), cSceSys__scheduler);
-	InjectHook(cSceSys__scheduler_thunk.as_int(), cSceSys__scheduler_Hook, PATCH_JUMP);
+	InjectHook(cSceSys__scheduler_thunk.as_int(), cSceSys__scheduler_Hook, HookType::Jump);
 
 	// WeaponChange funcptr
 	pattern = hook::pattern("6A 01 E8 ? ? ? ? 83 C4 04 E8 ? ? ? ? F6");
@@ -1125,7 +1125,7 @@ bool re4t::init::Game()
 	// QuakeExec ptr
 	pattern = hook::pattern("E8 ? ? ? ? 83 C4 14 8B E5 5D");
 	ReadCall(injector::GetBranchDestination(pattern.get_first()).as_int(), bio4::QuakeExec);
-	
+
 	// PutInCase funcptr
 	pattern = hook::pattern("0F B7 4E 1C 52 50 51 E8");
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0x7)).as_int(), bio4::PutInCase);
@@ -1284,7 +1284,7 @@ bool re4t::init::Game()
 	pattern = hook::pattern("8B 15 ? ? ? ? 3B 14 ? 75 ? 8B 15 ? ? ? ? 3B 54 38");
 	bio4::g_D3D::Width_1 = (uint32_t*)*pattern.count(1).get(0).get<uint32_t>(2);
 	bio4::g_D3D::Height_1 = bio4::g_D3D::Width_1 + 1;
-	
+
 	pattern = hook::pattern("38 1D ? ? ? ? 74 0C BE ? ? ? ? BF ? ? ? ? EB 1F 8B 15 ? ? ? ? 6A 40 51 50 53");
 	bio4::g_D3D::Fullscreen = (bool*)*pattern.count(1).get(0).get<uint32_t>(2);
 

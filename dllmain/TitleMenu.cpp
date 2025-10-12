@@ -75,13 +75,13 @@ void re4t::init::TitleMenu()
 	{
 		// hook the titleLoop call with our own reimplementation
 		auto pattern = hook::pattern("E8 ? ? ? ? 83 C4 04 E8 ? ? ? ? 33 DB 53");
-		InjectHook(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), titleLoop_hook, PATCH_JUMP);
+		InjectHook(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), titleLoop_hook, HookType::Jump);
 
 		// don't reset scroll_add_5C in titleMenuInit, otherwise scrolling will reset when leaving submenus like 'Help & Options'
 		pattern = hook::pattern("D9 5E 5C C6 46 58 00 39");
 		injector::MakeNOP(pattern.count(1).get(0).get<uint8_t>(0), 7);
 
-		// reset scroll_add_5C when leaving Assignment Ada & Mercenaries 
+		// reset scroll_add_5C when leaving Assignment Ada & Mercenaries
 		pattern = hook::pattern("C7 06 01 00 00 00 E8 ? ? ? ? 57");
 		struct titleSub_resetScrollAdd
 		{
@@ -358,4 +358,3 @@ void re4t::init::TitleMenu()
 		}; injector::MakeInline<gameInit_AdaPro>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(21));
 	}
 }
-
