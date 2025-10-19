@@ -66,3 +66,6 @@ jobs:
           path: |
             ${{ matrix.build-type }}/
           name: re4_tweaks_${{ steps.vars.outputs.type }}_${{ steps.vars.outputs.git_ref }}_${{ steps.vars.outputs.date }}
+
+permissions:
+  contents: read
