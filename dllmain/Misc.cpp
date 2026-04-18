@@ -340,7 +340,7 @@ void Install_LangLogHook()
 {
 	static char* game_lang = nullptr;
 
-	auto pattern = hook::pattern("8A ? 08 8B ? ? ? ? ? 88 ? ? ? ? ? C3 8B FF");
+	auto pattern = re4t::pattern("8A ? 08 8B ? ? ? ? ? 88 ? ? ? ? ? C3 8B FF");
 	struct GameLangLog
 	{
 		void operator()(injector::reg_pack& regs)
@@ -561,36 +561,36 @@ void re4t::init::Misc()
 		// the game skipping the wep**_r3_ready** funcs, which are responsible to set up a bunch of stuff related to aiming, leading to a broken state. Now we hook
 		// this function and, if the player wants to reload without aiming, we first pretend the player is aiming. This makes everything get set up properly. Then,
 		// we tell cPlayer__keyReload_hook to go into the reload routine. Kinda messy, but it seems to fix the issue we had before.
-		auto pattern = hook::pattern("E8 ? ? ? ? 85 C0 74 ? 81 A6 ? ? ? ? ? ? ? ? C7 86 ? ? ? ? ? ? ? ? 5E");
+		auto pattern = re4t::pattern("E8 ? ? ? ? 85 C0 74 ? 81 A6 ? ? ? ? ? ? ? ? C7 86 ? ? ? ? ? ? ? ? 5E");
 
 		ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), joyKamae_orig);
 		InjectHook(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), joyKamae_Hook, HookType::Jump);
 
 		// cPlayer::keyReload -> Makes the game enter the reload routine if a condition is met.
-		pattern = hook::pattern("E8 ? ? ? ? 84 C0 74 3A 8B 86 ? ? ? ? 39 58 ? 74 ? 8B 40");
+		pattern = re4t::pattern("E8 ? ? ? ? 84 C0 74 3A 8B 86 ? ? ? ? 39 58 ? 74 ? 8B 40");
 
 		ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), cPlayer__keyReload_orig);
 		InjectHook(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), cPlayer__keyReload_hook, HookType::Jump);
 
 		// PlReloadDirect is used to skip the camera change when you press the aim button (checked in cPlayer::isKamae)
-		pattern = hook::pattern("80 3D ? ? ? ? ? 74 ? 3C ? 74 ? 3C ? 74 ? B8 ? ? ? ? C3");
+		pattern = re4t::pattern("80 3D ? ? ? ? ? 74 ? 3C ? 74 ? 3C ? 74 ? B8 ? ? ? ? C3");
 		PlReloadDirect = (bool*)*pattern.count(1).get(0).get<uint32_t*>(2);
 
 		// Grab a pointer to cActionButton's "m_active_flag".
-		pattern = hook::pattern("80 3D ? ? ? ? ? 75 ? 6A ? E8 ? ? ? ? 83 C4 ? EB");
+		pattern = re4t::pattern("80 3D ? ? ? ? ? 75 ? 6A ? E8 ? ? ? ? 83 C4 ? EB");
 		ActBtn_m_active_flag_42 = (bool*)*pattern.count(1).get(0).get<uint32_t*>(2);
 	}
 
 	// Hook SsTermMain MDT reading functions so we can load loose file instead
 	{
-		auto pattern = hook::pattern("8B 41 44 A3");
+		auto pattern = re4t::pattern("8B 41 44 A3");
 		SsTermMain_MdtPtr = *pattern.count(2).get(0).get<void**>(4);
 
-		pattern = hook::pattern("50 8B CB E8 ? ? ? ? 5F 5E 5B 5D C2");
+		pattern = re4t::pattern("50 8B CB E8 ? ? ? ? 5F 5E 5B 5D C2");
 		ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(3)).as_int(), SsTermMain__OpeMdtSetNo);
 		InjectHook(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(3)).as_int(), SsTermMain__OpeMdtSetNo_Hook);
 
-		pattern = hook::pattern("6A 00 6A 00 6A 00 6A 15 6A 00 E8");
+		pattern = re4t::pattern("6A 00 6A 00 6A 00 6A 15 6A 00 E8");
 		ReadCall(pattern.count(1).get(0).get<uint8_t>(0xA), SndCall);
 		InjectHook(pattern.count(1).get(0).get<uint8_t>(0xA), SsTermMain__quit_SndCall_hook);
 	}
@@ -598,27 +598,27 @@ void re4t::init::Misc()
 	// Hook DatTbl funcs, to allow side-loading loose files instead
 	{
 		// DatTbl::GetDat retrieves data pointer from the DAT file - hook it so we can search & read from the local filesystem too
-		auto pattern = hook::pattern("52 8D 45 ? 50 83 C1 48 E8 ? ? ? ? 84 C0 75 ? 53");
+		auto pattern = re4t::pattern("52 8D 45 ? 50 83 C1 48 E8 ? ? ? ? 84 C0 75 ? 53");
 		ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(8)).as_int(), DatTbl__GetDat);
 		InjectHook(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(8)).as_int(), DatTbl__GetDat_Hook);
 
 		// DatTbl::GetDatWkNo retrieves pointer via DAT table index instead of a file path
-		pattern = hook::pattern("52 8D 45 ? 8D 71 48 50 8B CE E8 ? ? ? ? 84 C0 0F");
+		pattern = re4t::pattern("52 8D 45 ? 8D 71 48 50 8B CE E8 ? ? ? ? 84 C0 0F");
 		ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(10)).as_int(), DatTbl__GetDatWkNo);
 		InjectHook(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(10)).as_int(), DatTbl__GetDatWkNo_Hook);
 
 		// DatTbl::DelDat seems to release the data buffer for a file inside the DAT, hook it so we can release the memory-mapping if needed too
-		pattern = hook::pattern("50 83 C1 48 E8 ? ? ? ? 84 C0 75 ? 68");
+		pattern = re4t::pattern("50 83 C1 48 E8 ? ? ? ? 84 C0 75 ? 68");
 		ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(4)).as_int(), DatTbl__DelDat);
 		InjectHook(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(4)).as_int(), DatTbl__DelDat_Hook);
 
 		// DatTbl::DelDatWkNo release memory-map by index...
-		pattern = hook::pattern("8D 73 48 57 8B CE E8 ? ? ? ? 47 3B 7D");
+		pattern = re4t::pattern("8D 73 48 57 8B CE E8 ? ? ? ? 47 3B 7D");
 		ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(6)).as_int(), DatTbl__DelDatWkNo);
 		InjectHook(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(6)).as_int(), DatTbl__DelDatWkNo_Hook);
 
 		// DatTbl::DelAll is called when the game is finished with this DAT, hook it so we can release any memory-mappings we made
-		pattern = hook::pattern("32 C0 5E C3 6A 01 E8 ? ? ? ? 8B 46 04 50 E8");
+		pattern = re4t::pattern("32 C0 5E C3 6A 01 E8 ? ? ? ? 8B 46 04 50 E8");
 		ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(6)).as_int(), DatTbl__DelAll);
 		InjectHook(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(6)).as_int(), DatTbl__DelAll_Hook);
 	}
@@ -632,23 +632,23 @@ void re4t::init::Misc()
 		if (hasSubs)
 		{
 			// Patch graphics_menu to enable subtitle option
-			auto pattern = hook::pattern("E8 ? ? ? ? B1 01 3A C1 0F");
+			auto pattern = re4t::pattern("E8 ? ? ? ? B1 01 3A C1 0F");
 			if (pattern.size() > 0) // JP exe doesn't contain code for english lang...
 			{
 				injector::WriteMemory(pattern.count(1).get(0).get<uint8_t>(9), uint16_t(0xE990), true);
 
 				// patch Event::MesSet to allow English subs to be drawn
-				pattern = hook::pattern("8A 40 08 3C 02 74 ? 3C 01");
+				pattern = re4t::pattern("8A 40 08 3C 02 74 ? 3C 01");
 				injector::MakeNOP(pattern.count(1).get(0).get<uint8_t>(5), 2, true);
 
 				// Patch second language check inside graphics_menu, unsure what it's doing...
-				pattern = hook::pattern("C7 85 ? ? ? ? FF FF FF FF E8 ? ? ? ? 33 D2 3C 01");
+				pattern = re4t::pattern("C7 85 ? ? ? ? FF FF FF FF E8 ? ? ? ? 33 D2 3C 01");
 				uint8_t xorEax[] = { 0x31, 0xC0, 0x90, 0x90, 0x90 };
 				injector::WriteMemoryRaw(pattern.count(1).get(0).get<uint8_t>(0xA), xorEax, 5, true);
 
 				// Fix R245EventS00/R22EEventS00 accidentally calling EvtReadExec with a do-not-free-after-use (0x40) flag
 				// (without this fix, those cutscenes will leak memory whenever they're played...)
-				pattern = hook::pattern("6A 50 53 68 ? ? ? ? B9 ? ? ? ? E8");
+				pattern = re4t::pattern("6A 50 53 68 ? ? ? ? B9 ? ? ? ? E8");
 				injector::WriteMemory(pattern.count(2).get(0).get<uint8_t>(1), uint8_t(0x10), true);
 				injector::WriteMemory(pattern.count(2).get(1).get<uint8_t>(1), uint8_t(0x10), true);
 
@@ -659,7 +659,7 @@ void re4t::init::Misc()
 
 	// Remove savegame SteamID checks, allows easier save transfers
 	{
-		auto pattern = hook::pattern("8B 88 40 1E 00 00 3B 4D ? 0F 85 ? ? ? ?");
+		auto pattern = re4t::pattern("8B 88 40 1E 00 00 3B 4D ? 0F 85 ? ? ? ?");
 		Nop(pattern.count(1).get(0).get<uint8_t>(0x9), 6);
 		Nop(pattern.count(1).get(0).get<uint8_t>(0x18), 6);
 	}
@@ -668,7 +668,7 @@ void re4t::init::Misc()
 	{
 		static char* game_lang = nullptr;
 
-		auto pattern = hook::pattern("8A ? 08 8B ? ? ? ? ? 88 ? ? ? ? ? C3 8B FF");
+		auto pattern = re4t::pattern("8A ? 08 8B ? ? ? ? ? 88 ? ? ? ? ? C3 8B FF");
 		struct GameLangLog
 		{
 			void operator()(injector::reg_pack& regs)
@@ -728,7 +728,7 @@ void re4t::init::Misc()
 
 	// Hook gameInit to allow difficulty overrides
 	{
-		auto pattern = hook::pattern("A1 ? ? ? ? 83 C4 08 80 B8 ? ? ? ? ? 75 06 83 48 54 20 EB 04 83 60 54");
+		auto pattern = re4t::pattern("A1 ? ? ? ? 83 C4 08 80 B8 ? ? ? ? ? 75 06 83 48 54 20 EB 04 83 60 54");
 		struct gameInit_DifficultyOverride
 		{
 			void operator()(injector::reg_pack& regs)
@@ -753,13 +753,13 @@ void re4t::init::Misc()
 
 	// Hook PlSetCostume to allow custom costume combos
 	{
-		auto pattern = hook::pattern("E8 ? ? ? ? A1 ? ? ? ? 66 83 88 ? ? ? ? ? 5B");
+		auto pattern = re4t::pattern("E8 ? ? ? ? A1 ? ? ? ? 66 83 88 ? ? ? ? ? 5B");
 		ReadCall(injector::GetBranchDestination(pattern.get_first()).as_int(), j_PlSetCostume_Orig);
 		InjectHook(injector::GetBranchDestination(pattern.get_first()).as_int(), j_PlSetCostume_Hook);
 
 		// Separate Ways and Assignment Ada don't call PlSetCostume. Instead, the costume is set at titleAda and titleSub.
 		// titleAda/Separate Ways
-		pattern = hook::pattern("C6 81 ? ? ? ? ? 8B 15 ? ? ? ? 6A ? C6 82 ? ? ? ? ? A1 ? ? ? ? 80 78");
+		pattern = re4t::pattern("C6 81 ? ? ? ? ? 8B 15 ? ? ? ? 6A ? C6 82 ? ? ? ? ? A1 ? ? ? ? 80 78");
 		struct AdaCosStructSW
 		{
 			void operator()(injector::reg_pack& regs)
@@ -779,7 +779,7 @@ void re4t::init::Misc()
 		}; injector::MakeInline<AdaCosStructSW>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(7));
 
 		// titleSub/Assignment Ada
-		pattern = hook::pattern("C6 ? ? ? ? ? ? E8 ? ? ? ? 6A ? 68 ? ? ? ? 6A ? 89 46 ? E8 ? ? ? ? 8B 15");
+		pattern = re4t::pattern("C6 ? ? ? ? ? ? E8 ? ? ? ? 6A ? 68 ? ? ? ? 6A ? 89 46 ? E8 ? ? ? ? 8B 15");
 		struct AdaCosStructAA
 		{
 			void operator()(injector::reg_pack& regs)
@@ -799,7 +799,7 @@ void re4t::init::Misc()
 		}; injector::MakeInline<AdaCosStructAA>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(7));
 
 		// The Mercenaries also sets costumes using titleSub.
-		pattern = hook::pattern("C6 46 ? ? 88 4E ? E8 ? ? ? ? 6A ? 6A ? 6A ? 6A ? 6A ? 6A ? E8");
+		pattern = re4t::pattern("C6 46 ? ? 88 4E ? E8 ? ? ? ? 6A ? 6A ? 6A ? 6A ? 6A ? 6A ? E8");
 		struct MercsTitleSubCos
 		{
 			void operator()(injector::reg_pack& regs)
@@ -842,19 +842,19 @@ void re4t::init::Misc()
 		// Fix instructions that are checking for Ashley's armor costume instead of Leon's mafia costume, which can cause a bunch of issues
 		{
 			// PlClothSetLeon -- Issue: Would not apply jacket physics if Ashley isn't armored
-			auto pattern = hook::pattern("80 B8 ? ? ? ? 02 75 ? 6A ? 68 ? ? ? ? B9 ? ? ? ? E8 ? ? ? ? 66 85 ? 75 ? A1");
+			auto pattern = re4t::pattern("80 B8 ? ? ? ? 02 75 ? 6A ? 68 ? ? ? ? B9 ? ? ? ? E8 ? ? ? ? 66 85 ? 75 ? A1");
 			injector::WriteMemory(pattern.count(1).get(0).get<uint32_t>(2), (uint8_t)0xC9, true); // +00004FCB -> +00004FC9
 			injector::WriteMemory(pattern.count(1).get(0).get<uint32_t>(6), (uint8_t)LeonCostume::Mafia, true); // 02 -> 04
 
 			// Chicago Typewriter -- Issue: if Ashley is armored, Leon's Chicago Typewriter reload animation would always be the special Mafia one, regardless of Leon's costume
-			auto pattern_wep11_r2_reload_1 = hook::pattern("80 B8 ? ? ? ? ? 0F 85 ? ? ? ? 38 98 ? ? ? ? 0F 85 ? ? ? ? 80 B8 ? ? ? ? ? 0F 85 ? ? ? ? 8B 96");
-			auto pattern_wep11_r2_reload_2to7 = hook::pattern("80 B8 ? ? ? ? 02 75 ? 38 98 ? ? ? ? 75 ? 80 B8 ? ? ? ? 0C");
-			auto pattern_wep11_r2_reload_8 = hook::pattern("80 B8 ? ? ? ? ? D9 EE 0F 85 ? ? ? ? 38 98 ? ? ? ? 0F 85 ? ? ? ? 80 B8 ? ? ? ? ? 0F 85");
+			auto pattern_wep11_r2_reload_1 = re4t::pattern("80 B8 ? ? ? ? ? 0F 85 ? ? ? ? 38 98 ? ? ? ? 0F 85 ? ? ? ? 80 B8 ? ? ? ? ? 0F 85 ? ? ? ? 8B 96");
+			auto pattern_wep11_r2_reload_2to7 = re4t::pattern("80 B8 ? ? ? ? 02 75 ? 38 98 ? ? ? ? 75 ? 80 B8 ? ? ? ? 0C");
+			auto pattern_wep11_r2_reload_8 = re4t::pattern("80 B8 ? ? ? ? ? D9 EE 0F 85 ? ? ? ? 38 98 ? ? ? ? 0F 85 ? ? ? ? 80 B8 ? ? ? ? ? 0F 85");
 
-			auto pattern_ReadWepData = hook::pattern("80 B9 ? ? ? ? ? 75 ? BB ? ? ? ? EB ? BB ? ? ? ? 8D 3C DD");
-			auto pattern_cObjTompson__setMotion = hook::pattern("80 B8 ? ? ? ? ? 75 ? 38 88 ? ? ? ? 75 ? 8B 96 ? ? ? ? 89 8A ? ? ? ? 8B 86 ? ? ? ? 89");
-			auto pattern_cPlayer__seqSeCtrl = hook::pattern("80 B8 ? ? ? ? ? 75 ? 80 B8 ? ? ? ? ? 75 ? 83 FB ? 77 ? 0F B6 8B ? ? ? ? FF 24 8D");
-			auto pattern_cObjTompson__moveReload = hook::pattern("80 B9 ? ? ? ? ? 75 ? 80 B9 ? ? ? ? ? 0F 84 ? ? ? ? 80 BE ? ? ? ? ? 0F B6 81");
+			auto pattern_ReadWepData = re4t::pattern("80 B9 ? ? ? ? ? 75 ? BB ? ? ? ? EB ? BB ? ? ? ? 8D 3C DD");
+			auto pattern_cObjTompson__setMotion = re4t::pattern("80 B8 ? ? ? ? ? 75 ? 38 88 ? ? ? ? 75 ? 8B 96 ? ? ? ? 89 8A ? ? ? ? 8B 86 ? ? ? ? 89");
+			auto pattern_cPlayer__seqSeCtrl = re4t::pattern("80 B8 ? ? ? ? ? 75 ? 80 B8 ? ? ? ? ? 75 ? 83 FB ? 77 ? 0F B6 8B ? ? ? ? FF 24 8D");
+			auto pattern_cObjTompson__moveReload = re4t::pattern("80 B9 ? ? ? ? ? 75 ? 80 B9 ? ? ? ? ? 0F 84 ? ? ? ? 80 BE ? ? ? ? ? 0F B6 81");
 
 			injector::WriteMemory(pattern_wep11_r2_reload_1.count(1).get(0).get<uint32_t>(2), (uint8_t)0xC9, true); // +00004FCB -> +00004FC9
 			injector::WriteMemory(pattern_wep11_r2_reload_1.count(1).get(0).get<uint32_t>(6), (uint8_t)LeonCostume::Mafia, true); // 02 -> 04
@@ -883,7 +883,7 @@ void re4t::init::Misc()
 
 		// Workaround crashes caused by some Ada costumes not working with certain weapons. Only seems to affect the inventory screen.
 		{
-			auto pattern = hook::pattern("0F B7 0D ? ? ? ? 51 E8 ? ? ? ? 0F B6 ? 50 8D 4D ? 51 E8 ? ? ? ? 8B");
+			auto pattern = re4t::pattern("0F B7 0D ? ? ? ? 51 E8 ? ? ? ? 0F B6 ? 50 8D 4D ? 51 E8 ? ? ? ? 8B");
 			static uint16_t* m_wep_id_10 = (uint16_t*)*pattern.count(1).get(0).get<uint32_t>(3);
 
 			// SubScreenTask -> Make game think the player's hand is empty instead of having the problematic weapons.
@@ -915,7 +915,7 @@ void re4t::init::Misc()
 			}; injector::MakeInline<SubScreenTask_hook>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(7));
 
 			// playerModelInit -> Same as before.
-			pattern = hook::pattern("0F B7 05 ? ? ? ? 53 56 57 50 E8 ? ? ? ? 0F B7 15 ? ? ? ? 52 0F B6 ? E8");
+			pattern = re4t::pattern("0F B7 05 ? ? ? ? 53 56 57 50 E8 ? ? ? ? 0F B7 15 ? ? ? ? 52 0F B6 ? E8");
 			struct playerModelInit_hook
 			{
 				void operator()(injector::reg_pack& regs)
@@ -944,7 +944,7 @@ void re4t::init::Misc()
 			}; injector::MakeInline<playerModelInit_hook>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(7));
 
 			// SsPzzlMain::move -> Same as before, but for when changing weapons in the inventory.
-			pattern = hook::pattern("0F B7 05 ? ? ? ? 50 E8 ? ? ? ? 0F B7 15 ? ? ? ? 52 0F B6 ? E8 ? ? ? ? 0F B6 ? 50");
+			pattern = re4t::pattern("0F B7 05 ? ? ? ? 50 E8 ? ? ? ? 0F B7 15 ? ? ? ? 52 0F B6 ? E8 ? ? ? ? 0F B6 ? 50");
 			struct SsPzzlMain__move_hook
 			{
 				void operator()(injector::reg_pack& regs)
@@ -978,10 +978,10 @@ void re4t::init::Misc()
 	// Mafia Leon on cutscenes
 	if (re4t::cfg->bAllowMafiaLeonCutscenes)
 	{
-		auto pattern = hook::pattern("80 B9 ? ? ? ? 04 6A ? 6A ? 6A ? 6A ? 0F 85");
+		auto pattern = re4t::pattern("80 B9 ? ? ? ? 04 6A ? 6A ? 6A ? 6A ? 0F 85");
 		injector::WriteMemory(pattern.count(1).get(0).get<uint32_t>(6), (uint8_t)-1, true); // Allow the correct models to be used
 
-		pattern = hook::pattern("8B 7D 18 75 ? 80 B8 ? ? ? ? 02 75 ? 6A ? 68");
+		pattern = re4t::pattern("8B 7D 18 75 ? 80 B8 ? ? ? ? 02 75 ? 6A ? 68");
 		injector::WriteMemory(pattern.count(1).get(0).get<uint32_t>(11), (uint8_t)-1, true); // Allow the correct animations to be used
 
 		spd::log()->info("AllowMafiaLeonCutscenes enabled");
@@ -991,7 +991,7 @@ void re4t::init::Misc()
 	if (!re4t::cfg->bIgnoreFPSWarning)
 	{
 		// Hook function to read the FPS value from config.ini
-		auto pattern = hook::pattern("89 0D ? ? ? ? 0F 95 ? 88 15 ? ? ? ? D9 1D ? ? ? ? A3 ? ? ? ? DB 46 ? D9 1D ? ? ? ? 8B 4E ? 89 0D ? ? ? ? 8B 4D ? 5E");
+		auto pattern = re4t::pattern("89 0D ? ? ? ? 0F 95 ? 88 15 ? ? ? ? D9 1D ? ? ? ? A3 ? ? ? ? DB 46 ? D9 1D ? ? ? ? 8B 4E ? 89 0D ? ? ? ? 8B 4D ? 5E");
 		struct ReadFPS
 		{
 			void operator()(injector::reg_pack& regs)
@@ -1034,7 +1034,7 @@ void re4t::init::Misc()
 
 	// Add screenshake effect to scoped rifle shots
 	{
-		auto pattern = hook::pattern("8B 96 D8 07 00 00 8B 4A ? 6A 00 6A 01 E8"); // wep09_r3_fire00 is used for both rifles
+		auto pattern = re4t::pattern("8B 96 D8 07 00 00 8B 4A ? 6A 00 6A 01 E8"); // wep09_r3_fire00 is used for both rifles
 		struct RifleScreenShake
 		{
 			void operator()(injector::reg_pack& regs)
@@ -1051,7 +1051,7 @@ void re4t::init::Misc()
 	// Allow changing games level of violence to users choice
 	{
 		// find cCard functbl (tbl.1654)
-		auto pattern = hook::pattern("0F B6 46 04 8D 14 47 03 D0 8B 04 95 ? ? ? ?");
+		auto pattern = re4t::pattern("0F B6 46 04 8D 14 47 03 D0 8B 04 95 ? ? ? ?");
 		uint8_t** tbl_1654 = *pattern.count(1).get(0).get<uint8_t**>(12);
 
 		// Update cCard::firstCheck10 entry to use our hook instead
@@ -1059,7 +1059,7 @@ void re4t::init::Misc()
 		injector::WriteMemory(&tbl_1654[5], &cCard__firstCheck10_Hook, true);
 
 		// Hook setLanguage func
-		pattern = hook::pattern("A3 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? A9 00 00 00 F0");
+		pattern = re4t::pattern("A3 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? A9 00 00 00 F0");
 		if (!pattern.empty())
 		{
 			ReadCall(pattern.count(1).get(0).get<uint32_t>(15), setLanguage_Orig);
@@ -1068,7 +1068,7 @@ void re4t::init::Misc()
 		else
 		{
 			// JP build is missing whole setLanguage func, hook systemStartInit instead
-			pattern = hook::pattern("53 57 E8 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? 8B 35");
+			pattern = re4t::pattern("53 57 E8 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? 8B 35");
 			ReadCall(pattern.count(1).get(0).get<uint32_t>(7), setLanguage_Orig);
 			InjectHook(pattern.count(1).get(0).get<uint32_t>(7), setLanguage_Hook);
 		}
@@ -1076,7 +1076,7 @@ void re4t::init::Misc()
 		// Remove stupid check of EXE violence level against savegame
 		// (might not be in all versions?)
 		// Without this, game decides not to read in savegames for some reason
-		pattern = hook::pattern("3A 4A 09 74");
+		pattern = re4t::pattern("3A 4A 09 74");
 		if (!pattern.empty())
 			injector::WriteMemory(pattern.count(1).get(0).get<uint8_t>(3), uint8_t(0xeb), true);
 	}
@@ -1084,14 +1084,14 @@ void re4t::init::Misc()
 	// Option to skip the intro logos when starting up the game
 	if (re4t::cfg->bSkipIntroLogos)
 	{
-		auto pattern = hook::pattern("81 7E 24 E6 00 00 00");
+		auto pattern = re4t::pattern("81 7E 24 E6 00 00 00");
 		// Overwrite some kind of timer check to check for 0 seconds instead
 		injector::WriteMemory(pattern.count(1).get(0).get<uint8_t>(3), uint32_t(0), true);
 		// After that timer, move to stage 0x1E instead of 0x2, making the logos end early
 		injector::WriteMemory(pattern.count(1).get(0).get<uint8_t>(17), uint8_t(0x1E), true);
 
 		// JP: skip CERO warning screen (takes 30+ seconds unless button pressed, ew)
-		pattern = hook::pattern("83 C4 14 FE 46 01 D9 5E 04");
+		pattern = re4t::pattern("83 C4 14 FE 46 01 D9 5E 04");
 		if (pattern.size() == 1) // should only match JP
 		{
 			// Patch code inside tvModePC_Startup to "add byte ptr [esi+1], 3; nop; nop" to skip warn screen...
@@ -1102,7 +1102,7 @@ void re4t::init::Misc()
 		if (re4t::cfg->bSkipMenuFades)
 		{
 			// Skip titleWarning fade-in
-			pattern = hook::pattern("DD D8 0F BE 46 01 83 E8 00 0F");
+			pattern = re4t::pattern("DD D8 0F BE 46 01 83 E8 00 0F");
 			uint8_t* titleWarningCode = pattern.count(1).get(0).get<uint8_t>(2);
 			Patch(titleWarningCode + 0x7, uint16_t(0x9090));
 			Patch(titleWarningCode + 0x9, uint32_t(0x90909090));
@@ -1111,7 +1111,7 @@ void re4t::init::Misc()
 			Patch(titleWarningCode + 0x13, uint32_t(0x90909090));
 
 			// Skip logo fade-in
-			pattern = hook::pattern("3B 05 ? ? ? ? 7E ? 3B 05 ? ? ? ? 7D ? 68 00 20 00 00 68 00 10 00 C0");
+			pattern = re4t::pattern("3B 05 ? ? ? ? 7E ? 3B 05 ? ? ? ? 7D ? 68 00 20 00 00 68 00 10 00 C0");
 			uint8_t* titleLogoCode = pattern.count(1).get(0).get<uint8_t>(0);
 			Patch(titleLogoCode + 0x6, uint16_t(0x9090));
 			Patch(titleLogoCode + 0xE, uint16_t(0x9090));
@@ -1120,7 +1120,7 @@ void re4t::init::Misc()
 			// Skip key checks on "PRESS ANY KEY" screen
 			static uint8_t* anyKeyPressedBool = nullptr;
 
-			auto pattern = hook::pattern("E8 ? ? ? ? 80 3D ? ? ? ? 00 0F 84 ? ? ? ? 6A 00 68 00 00 00 40");
+			auto pattern = re4t::pattern("E8 ? ? ? ? 80 3D ? ? ? ? 00 0F 84 ? ? ? ? 6A 00 68 00 00 00 40");
 			anyKeyPressedBool = *pattern.count(1).get(0).get<uint8_t*>(7);
 
 			static bool hasBeenSkipped = false;
@@ -1145,7 +1145,7 @@ void re4t::init::Misc()
 			}; injector::MakeInline<SkipMenuFades>(pattern.count(1).get(0).get<uint32_t>(5), pattern.count(1).get(0).get<uint32_t>(12));
 
 			// Remove delays from cCard::loadMain
-			pattern = hook::pattern("D9 E8 5E DE E1 DC 05 ? ? ? ? D9 9B FC 04 00 00");
+			pattern = re4t::pattern("D9 E8 5E DE E1 DC 05 ? ? ? ? D9 9B FC 04 00 00");
 			uint8_t* addr1 = pattern.count(2).get(0).get<uint8_t>(0);
 			uint8_t* addr2 = pattern.count(2).get(1).get<uint8_t>(0);
 			// fld1 -> fldz
@@ -1156,13 +1156,13 @@ void re4t::init::Misc()
 			injector::MakeNOP(addr2 + 5, 6, true);
 
 			// cCard: patch FadeSet time to speed up entering/exiting save menu
-			pattern = hook::pattern("F6 41 04 80 75 ? 6A 00 6A 00 6A 0A C7 45");
+			pattern = re4t::pattern("F6 41 04 80 75 ? 6A 00 6A 00 6A 0A C7 45");
 			Patch(pattern.count(1).get(0).get<uint8_t>(0xB), uint8_t(0)); // cCard::exit
-			pattern = hook::pattern("F6 40 04 08 75 ? 53 53 6A 0A C7 45");
+			pattern = re4t::pattern("F6 40 04 08 75 ? 53 53 6A 0A C7 45");
 			Patch(pattern.count(1).get(0).get<uint8_t>(0x9), uint8_t(0)); // cCard::initialize
 
 			// cCard::firstCheck10: skip timer check, speeds up initial "Loading, please wait..." text
-			pattern = hook::pattern("8D 8B FC 04 00 00 6A 00 E8 ? ? ? ? 84 C0 74");
+			pattern = re4t::pattern("8D 8B FC 04 00 00 6A 00 E8 ? ? ? ? 84 C0 74");
 			injector::MakeNOP(pattern.count(1).get(0).get<uint8_t>(0xF), 2, true);
 
 			/* the following lets us speed up cCard::saveMain a lot
@@ -1170,7 +1170,7 @@ void re4t::init::Misc()
 			if we could make it so just the "successful!" message shows for a small period then this might be more clear*/
 
 			// cCard::saveMain
-			pattern = hook::pattern("D9 E8 DE E1 DC 05 ? ? ? ? D9 9E FC 04 00 00");
+			pattern = re4t::pattern("D9 E8 DE E1 DC 05 ? ? ? ? D9 9E FC 04 00 00");
 			uint8_t* addr3 = pattern.count(2).get(0).get<uint8_t>(0);
 			uint8_t* addr4 = pattern.count(2).get(1).get<uint8_t>(0);
 			Patch(addr3 + 1, uint8_t(0xEE));
@@ -1178,19 +1178,19 @@ void re4t::init::Misc()
 			injector::MakeNOP(addr3 + 4, 6, true);
 			injector::MakeNOP(addr4 + 4, 6, true);
 			// zero cCard::saveMain tick count check, related to the typewriter animation
-			pattern = hook::pattern("3D B8 0B 00 00");
+			pattern = re4t::pattern("3D B8 0B 00 00");
 			Patch(pattern.count(3).get(0).get<uint8_t>(1), uint32_t(0));
 			Patch(pattern.count(3).get(1).get<uint8_t>(1), uint32_t(0));
 			Patch(pattern.count(3).get(2).get<uint8_t>(1), uint32_t(0));
 			// nop key check to let save screen exit by itself (no "successful message!")
-			pattern = hook::pattern("0F 84 ? ? ? ? 33 FF 8D A4 24 00 00 00 00 57");
+			pattern = re4t::pattern("0F 84 ? ? ? ? 33 FF 8D A4 24 00 00 00 00 57");
 			injector::MakeNOP(pattern.count(1).get(0).get<uint8_t>(0), 6, true);
 
 #if 0
 			// Patch FadeSet to automatically skip all fading animations
 			// TODO: check if everything still works fine with this
 			// could be worth adding as a [DEBUG] option since it might be able to speed up a lot of places
-			pattern = hook::pattern("BA 01 00 00 00 85 C9 78 ? BA 03 00 00 00");
+			pattern = re4t::pattern("BA 01 00 00 00 85 C9 78 ? BA 03 00 00 00");
 			uint8_t* addr = pattern.count(1).get(0).get<uint8_t>(0);
 			Patch(addr + 1, uint32_t(0)); // remove FADE_BE_ALIVE flag
 			Patch(addr + 0xA, uint32_t(0)); // remove FADE_BE_ALIVE & FADE_BE_CONTINUE flags
@@ -1204,7 +1204,7 @@ void re4t::init::Misc()
 	// Speed up "quit game" fade
 	if (re4t::cfg->bSpeedUpQuitGame)
 	{
-		auto pattern = hook::pattern("6A ? 53 E8 ? ? ? ? 53 53 53 53 6A ? 53 E8");
+		auto pattern = re4t::pattern("6A ? 53 E8 ? ? ? ? 53 53 53 53 6A ? 53 E8");
 		injector::WriteMemory(pattern.count(1).get(0).get<uint32_t>(1), (uint8_t)0x0A, true); // push 5A -> push 0A
 
 		spd::log()->info("SpeedUpQuitGame enabled");
@@ -1222,7 +1222,7 @@ void re4t::init::Misc()
 	// Add Handgun silencer to merchant sell list
 	if (re4t::cfg->bAllowSellingHandgunSilencer)
 	{
-		auto pattern = hook::pattern(re4t::sections::data, "DB 00 AC 0D 01 00 FF FF 00 00 00 00 00 00 00 00 00 00 0B 01");
+		auto pattern = re4t::pattern(re4t::sections::data, "DB 00 AC 0D 01 00 FF FF 00 00 00 00 00 00 00 00 00 00 0B 01");
 
 		struct PRICE_INFO // name from PS2/VR
 		{
@@ -1241,7 +1241,7 @@ void re4t::init::Misc()
 		g_item_price_tbl_130[2].valid_4 = 0;
 
 		// Add 1 to price table count
-		pattern = hook::pattern(re4t::sections::data, "83 00 00 00 78 00 00 00");
+		pattern = re4t::pattern(re4t::sections::data, "83 00 00 00 78 00 00 00");
 		uint32_t* g_item_price_tbl_num = pattern.count(1).get(0).get<uint32_t>(0);
 		*g_item_price_tbl_num += 1;
 
@@ -1253,7 +1253,7 @@ void re4t::init::Misc()
 	// Leon's Chicago Typewriter: display "This machinegun is outfitted with a powerful .45 caliber magazine" when it has less than max capacity
 	{
 		// SellMenuSelect::move
-		auto pattern = hook::pattern("8B F0 E8 ? ? ? ? 0F b7 D0 52");
+		auto pattern = re4t::pattern("8B F0 E8 ? ? ? ? 0F b7 D0 52");
 		struct GetMsgID_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -1294,16 +1294,16 @@ void re4t::init::Misc()
 		}; injector::MakeInline<GetMsgID_hook>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(7));
 
 		// LvUpMenuSelect::move
-		pattern = hook::pattern("8B F0 E8 ? ? ? ? 8B ? ? 0F B7 C0");
+		pattern = re4t::pattern("8B F0 E8 ? ? ? ? 8B ? ? 0F B7 C0");
 		injector::MakeInline<GetMsgID_hook>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(7));
 
 		// BuyMenuSelect::move
-		pattern = hook::pattern("0F B7 10 52 E8 ? ? ? ? 83");
+		pattern = re4t::pattern("0F B7 10 52 E8 ? ? ? ? 83");
 		ReadCall(pattern.count(1).get(0).get<uint8_t>(4), itemCaption);
 		InjectHook(pattern.count(1).get(0).get<uint32_t>(4), BuyMenuSelect__move_itemCaption_hook);
 
 		// SsItemExamine::move
-		pattern = hook::pattern("0F B7 46 06 8B D0 C1");
+		pattern = re4t::pattern("0F B7 46 06 8B D0 C1");
 		struct SsItemExamine__move_SavecItem
 		{
 			void operator()(injector::reg_pack& regs)
@@ -1316,7 +1316,7 @@ void re4t::init::Misc()
 				regs.edx = regs.eax;
 			}
 		}; injector::MakeInline<SsItemExamine__move_SavecItem>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
-		pattern = hook::pattern("68 84 00 02 00 51 53");
+		pattern = re4t::pattern("68 84 00 02 00 51 53");
 		ReadCall(pattern.count(1).get(0).get<uint8_t>(13), MesSet);
 		InjectHook(pattern.count(1).get(0).get<uint32_t>(13), SsItemExamine__move_MesSet_hook, HookType::Call);
 	}
@@ -1325,7 +1325,7 @@ void re4t::init::Misc()
 	// Some reason they specifically excluded that outfit inside the physics functions, maybe there's an issue with it somewhere
 	// (Raz0r trainer overwrites this patch every frame for some reason, too bad)
 	{
-		auto pattern = hook::pattern("80 B8 C9 4F 00 00 02 74");
+		auto pattern = re4t::pattern("80 B8 C9 4F 00 00 02 74");
 		injector::MakeNOP(pattern.count(2).get(0).get<uint8_t>(7), 2);
 		injector::MakeNOP(pattern.count(2).get(1).get<uint8_t>(7), 2);
 	}
@@ -1337,7 +1337,7 @@ void re4t::init::Misc()
 	// so they fixed it in the code they copied for r515, but some reason decided not to copy the fix back to r315?
 	// that fix was fortunate for us though since it made the (very subtle) issue easier to spot, but would have been better if issue wasn't there in first place...
 	{
-		auto pattern = hook::pattern("D8 45 08 83 C4 04");
+		auto pattern = re4t::pattern("D8 45 08 83 C4 04");
 		injector::WriteMemory(pattern.count(1).get(0).get<uint8_t>(1), uint8_t(0x65), true); // fadd -> fsub
 	}
 
@@ -1349,7 +1349,7 @@ void re4t::init::Misc()
 	// Bug happens when currentFrame is 1 and maxFrames is 1, that code will get ran, which results in currentFrame being set to -1...
 	// There is a flag check in that func that can force it to 0 instead, but that flag can affect some other things too, so it's better to hook it & check if below 0 instead
 	{
-		auto pattern = hook::pattern("83 C2 FE 89 55 08");
+		auto pattern = re4t::pattern("83 C2 FE 89 55 08");
 		struct ShapeMoveFrameNumberFix
 		{
 			void operator()(injector::reg_pack& regs)
@@ -1364,7 +1364,7 @@ void re4t::init::Misc()
 
 	// Fix GetEtcFlgPtr crashes for R6XX/R7XX rooms (see comment above GetEtcFlgPtr_Hook)
 	{
-		auto pattern = hook::pattern("0F B6 8E 56 06 00 00 83 C4 ? 50 51 E8");
+		auto pattern = re4t::pattern("0F B6 8E 56 06 00 00 83 C4 ? 50 51 E8");
 
 		ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0xC)).as_int(), GetEtcFlgPtr);
 		InjectHook(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0xC)).as_int(), GetEtcFlgPtr_Hook, HookType::Jump);
@@ -1374,7 +1374,7 @@ void re4t::init::Misc()
 
 	// Patch reference to non-existent st7_0.rel to point to st6_0.rel instead, allows loading into R7XX rooms
 	{
-		auto pattern = hook::pattern(re4t::sections::rdata, "73 74 37 5F 30 2E 72 65");
+		auto pattern = re4t::pattern(re4t::sections::rdata, "73 74 37 5F 30 2E 72 65");
 		Patch(pattern.count(1).get(0).get<uint8_t>(2), uint8_t('6'));
 
 		spd::log()->info("st7_0 -> st6_0 patch applied");
@@ -1384,7 +1384,7 @@ void re4t::init::Misc()
 	{
 		// listRangeCheck handles preventing item selector from going below 0 / above max item count, and positioning of the selector
 		// We'll change the selected idx before listRangeCheck is ran on it, which allows position to be updated for us correctly
-		auto pattern = hook::pattern("8B 80 10 03 00 00");
+		auto pattern = re4t::pattern("8B 80 10 03 00 00");
 		struct listRangeCheck_AllowSkipToBottomFix_SellMenu
 		{
 			void operator()(injector::reg_pack& regs)
@@ -1407,7 +1407,7 @@ void re4t::init::Misc()
 		// Buy menu & upgrade menu had listRangeCheck inlined into it, grr...
 		// We'll replace the logic that overwrites _list_no_8 with our own
 		// (since there's not really a good way to hook it, and our change makes it obsolete anyway)
-		pattern = hook::pattern("8B 46 08 85 C0 79");
+		pattern = re4t::pattern("8B 46 08 85 C0 79");
 		struct listRangeCheck_AllowSkipToBottomFix_BuyMenu
 		{
 			void operator()(injector::reg_pack& regs)
@@ -1428,7 +1428,7 @@ void re4t::init::Misc()
 			}
 		}; injector::MakeInline<listRangeCheck_AllowSkipToBottomFix_BuyMenu>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(0x14));
 
-		pattern = hook::pattern("8B 47 08 85 C0 79");
+		pattern = re4t::pattern("8B 47 08 85 C0 79");
 		struct listRangeCheck_AllowSkipToBottomFix_LvUpMenu
 		{
 			void operator()(injector::reg_pack& regs)
@@ -1462,7 +1462,7 @@ void re4t::init::Misc()
 	// 
 	// More info at https://github.com/nipkownix/re4_tweaks/issues/331
 	{
-		auto pattern = hook::pattern("FE 86 FE 00 00 00 5B 5F 5E 5D C3 DD"); // "inc byte ptr [esi+0FEh]", 4EE833 in 1.1.0
+		auto pattern = re4t::pattern("FE 86 FE 00 00 00 5B 5F 5E 5D C3 DD"); // "inc byte ptr [esi+0FEh]", 4EE833 in 1.1.0
 		injector::MakeNOP(pattern.count(1).get(0).get<uint8_t>(0), 6, true);
 	}
 }

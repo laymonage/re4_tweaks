@@ -126,12 +126,12 @@ bool __cdecl KeyOnCheck_hook(KEY_BTN a1)
 
 void re4t::init::MouseTurning()
 {
-	auto pattern = hook::pattern("DB 05 ? ? ? ? D9 45 ? D9 C0 DE CA D9 C5");
+	auto pattern = re4t::pattern("DB 05 ? ? ? ? D9 45 ? D9 C0 DE CA D9 C5");
 	MouseDeltaX = (int32_t*)*pattern.count(1).get(0).get<uint32_t>(2);
 	MouseDeltaY = MouseDeltaX + 1;
 
 	// Keep CameraXpos at 0f while isMouseTurnEnabled
-	pattern = hook::pattern("D9 05 ? ? ? ? DE C2 D9 C9 D9 1D ? ? ? ? D9 85");
+	pattern = re4t::pattern("D9 05 ? ? ? ? DE C2 D9 C9 D9 1D ? ? ? ? D9 85");
 	struct CameraPositionWriter
 	{
 		void operator()(injector::reg_pack& regs)
@@ -158,15 +158,15 @@ void re4t::init::MouseTurning()
 	}; injector::MakeInline<CameraPositionWriter>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
 	// Trigger left turn
-	pattern = hook::pattern("E8 ? ? ? ? 83 C4 ? 84 C0 74 ? C7 86 ? ? ? ? ? ? ? ? 5E B8 ? ? ? ? 5B 8B E5 5D C3 8A 86");
+	pattern = re4t::pattern("E8 ? ? ? ? 83 C4 ? 84 C0 74 ? C7 86 ? ? ? ? ? ? ? ? 5E B8 ? ? ? ? 5B 8B E5 5D C3 8A 86");
 	InjectHook(pattern.count(1).get(0).get<uint32_t>(0), KeyOnCheck_hook, HookType::Call);
 
 	// Trigger right turn
-	pattern = hook::pattern("E8 ? ? ? ? 83 C4 ? 84 C0 74 ? C7 86 ? ? ? ? ? ? ? ? 5E B8 ? ? ? ? 5B 8B E5 5D C3 53");
+	pattern = re4t::pattern("E8 ? ? ? ? 83 C4 ? 84 C0 74 ? C7 86 ? ? ? ? ? ? ? ? 5E B8 ? ? ? ? 5B 8B E5 5D C3 53");
 	InjectHook(pattern.count(1).get(0).get<uint32_t>(0), KeyOnCheck_hook, HookType::Call);
 
 	// pl_R1_Turn (left and right separated) TODO: Combine them?
-	pattern = hook::pattern("A1 ? ? ? ? 83 E0 ? 33 C9 0B C1 75 ? 89 9E");
+	pattern = re4t::pattern("A1 ? ? ? ? 83 E0 ? 33 C9 0B C1 75 ? 89 9E");
 	struct pl_R1_Turn_left
 	{
 		void operator()(injector::reg_pack& regs)
@@ -204,7 +204,7 @@ void re4t::init::MouseTurning()
 		}
 	}; injector::MakeInline<pl_R1_Turn_left>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5));
 
-	pattern = hook::pattern("A1 ? ? ? ? 83 E0 ? 33 C9 0B C1 75 ? 89 8E");
+	pattern = re4t::pattern("A1 ? ? ? ? 83 E0 ? 33 C9 0B C1 75 ? 89 8E");
 	struct pl_R1_Turn_right
 	{
 		void operator()(injector::reg_pack& regs)
@@ -243,7 +243,7 @@ void re4t::init::MouseTurning()
 	}; injector::MakeInline<pl_R1_Turn_right>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5));
 
 	// pl_R1_Turn180
-	pattern = hook::pattern("0F B6 86 ? ? ? ? 33 DB 2B C3 74 ? 48 74 ? 8B 16");
+	pattern = re4t::pattern("0F B6 86 ? ? ? ? 33 DB 2B C3 74 ? 48 74 ? 8B 16");
 	struct TurnHook180
 	{
 		void operator()(injector::reg_pack& regs)
@@ -255,7 +255,7 @@ void re4t::init::MouseTurning()
 	}; injector::MakeInline<TurnHook180>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(7));
 
 	// pl_R1_Walk
-	pattern = hook::pattern("8B EC 83 EC ? 53 56 8B 75 ? 33 DB 38 9E");
+	pattern = re4t::pattern("8B EC 83 EC ? 53 56 8B 75 ? 33 DB 38 9E");
 	struct TurnHookWalk
 	{
 		void operator()(injector::reg_pack& regs)
@@ -268,7 +268,7 @@ void re4t::init::MouseTurning()
 	}; injector::MakeInline<TurnHookWalk>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5));
 
 	// pl_R1_Run
-	pattern = hook::pattern("8B EC 83 EC ? 53 56 8B 75 ? 0F B6 86 ? ? ? ? 33 DB");
+	pattern = re4t::pattern("8B EC 83 EC ? 53 56 8B 75 ? 0F B6 86 ? ? ? ? 33 DB");
 	struct TurnHookRun
 	{
 		void operator()(injector::reg_pack& regs)
@@ -281,7 +281,7 @@ void re4t::init::MouseTurning()
 	}; injector::MakeInline<TurnHookRun>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5));
 
 	// pl_R1_Back
-	pattern = hook::pattern("83 3D ? ? ? ? ? 75 ? D9 05 ? ? ? ? 8B 8E ? ? ? ? 83 EC ? D9");
+	pattern = re4t::pattern("83 3D ? ? ? ? ? 75 ? D9 05 ? ? ? ? 8B 8E ? ? ? ? 83 EC ? D9");
 	struct TurnHookWalkingBack
 	{
 		void operator()(injector::reg_pack& regs)
@@ -292,7 +292,7 @@ void re4t::init::MouseTurning()
 	injector::WriteMemory(pattern.count(3).get(1).get<uint32_t>(7), uint8_t(0xEB), true);
 
 	// Cancel the Knife_r3_down animation if we move the mouse (indicating we want to turn ASAP)
-	pattern = hook::pattern("A1 ? ? ? ? 25 ? ? ? ? 33 C9 0B C1 74 ? 8B 86 ? ? ? ? 39 48");
+	pattern = re4t::pattern("A1 ? ? ? ? 25 ? ? ? ? 33 C9 0B C1 74 ? 8B 86 ? ? ? ? 39 48");
 	ptrKnife_r3_downMovAddr = *pattern.count(1).get(0).get<uint32_t*>(1);
 	struct Knife_r3_downHook
 	{

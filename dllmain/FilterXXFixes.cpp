@@ -448,37 +448,37 @@ void __cdecl Filter01Render_Hook2(Filter01Params* params)
 void GetFilterPointers()
 {
 	// GC blur fix
-	auto pattern = hook::pattern("E8 ? ? ? ? 6A 01 6A 06 D9");
+	auto pattern = re4t::pattern("E8 ? ? ? ? 6A 01 6A 06 D9");
 	uint32_t* varPtr = pattern.count(1).get(0).get<uint32_t>(11);
 	ptr_InternalHeight = (float*)*varPtr;
 
-	pattern = hook::pattern("D1 E8 50 D9 AD ? ? ? ? D9 05 ? ? ? ?");
+	pattern = re4t::pattern("D1 E8 50 D9 AD ? ? ? ? D9 05 ? ? ? ?");
 	varPtr = pattern.count(1).get(0).get<uint32_t>(11);
 	ptr_InternalWidth = (float*)*varPtr;
 
-	pattern = hook::pattern("D1 E9 51 D9 AD ? ? ? ? E8 ? ? ? ? 8B 15");
+	pattern = re4t::pattern("D1 E9 51 D9 AD ? ? ? ? E8 ? ? ? ? 8B 15");
 	ptr_filter01_buff = *pattern.count(1).get(0).get<void**>(16);
 
-	pattern = hook::pattern("83 C4 ? D9 ? ? ? ? ? D9 05 ? ? ? ? 8B ? ? ? ? ? DD");
+	pattern = re4t::pattern("83 C4 ? D9 ? ? ? ? ? D9 05 ? ? ? ? 8B ? ? ? ? ? DD");
 	varPtr = pattern.count(1).get(0).get<uint32_t>(11);
 	ptr_InternalHeightScale = (float*)*varPtr;
 
 	varPtr = pattern.count(1).get(0).get<uint32_t>(17);
 	ptr_RenderHeight = (int*)*varPtr;
 
-	pattern = hook::pattern("E8 ? ? ? ? 33 DB 83 C4 20 39 1D ? ? ? ? 0F 86 ? ? ? ? A1 ? ? ? ? 56");
+	pattern = re4t::pattern("E8 ? ? ? ? 33 DB 83 C4 20 39 1D ? ? ? ? 0F 86 ? ? ? ? A1 ? ? ? ? 56");
 	ptr_Filter0aGXDraw_call1 = pattern.count(1).get(0).get<uint32_t>(0);
 
-	pattern = hook::pattern("E8 ? ? ? ? 46 83 C4 20 3B F7 0F 8C ? ? ? ? A1 ? ? ? ? 43 3B 1D ? ? ? ? 0F 82 ? ? ? ? 5F");
+	pattern = re4t::pattern("E8 ? ? ? ? 46 83 C4 20 3B F7 0F 8C ? ? ? ? A1 ? ? ? ? 43 3B 1D ? ? ? ? 0F 82 ? ? ? ? 5F");
 	ptr_Filter0aGXDraw_call2 = pattern.count(1).get(0).get<uint32_t>(0);
 
-	pattern = hook::pattern("E8 ? ? ? ? 6A 01 6A 03 6A 01 E8 ? ? ? ? 6A 01 E8 ? ? ? ? 8B 4D FC 83 C4 30 33 CD 5B E8 ? ? ? ? 8B E5 5D C3 90");
+	pattern = re4t::pattern("E8 ? ? ? ? 6A 01 6A 03 6A 01 E8 ? ? ? ? 6A 01 E8 ? ? ? ? 8B 4D FC 83 C4 30 33 CD 5B E8 ? ? ? ? 8B E5 5D C3 90");
 	ptr_Filter0aGXDraw_call3 = pattern.count(1).get(0).get<uint32_t>(0);
 
-	pattern = hook::pattern("5F 5E 6A 01 6A 01 E8 ? ? ? ? 83 C4 ? E8");
+	pattern = re4t::pattern("5F 5E 6A 01 6A 01 E8 ? ? ? ? 83 C4 ? E8");
 	ptr_Filter0aDrawBuffer_GetEFBCall = pattern.count(1).get(0).get<uint8_t>(3);
 
-	pattern = hook::pattern("56 6A 00 50 C7 05 ? ? ? ? 1F 00 00 00");
+	pattern = re4t::pattern("56 6A 00 50 C7 05 ? ? ? ? 1F 00 00 00");
 	varPtr = pattern.count(1).get(0).get<uint32_t>(6);
 	ptr_filter0a_shader_num = (int32_t*)*varPtr;
 }
@@ -490,7 +490,7 @@ void re4t::init::FilterXXFixes()
 	if (re4t::cfg->bEnableGCBlur)
 	{
 		// Hook Filter01Render, first block (loop that's ran 4 times + 0.25 pass)
-		auto pattern = hook::pattern("3C 01 0F 85 ? ? ? ? D9 85");
+		auto pattern = re4t::pattern("3C 01 0F 85 ? ? ? ? D9 85");
 		uint8_t* filter01_end = pattern.count(1).get(0).get<uint8_t>(4);
 		filter01_end += sizeof(int32_t) + *(int32_t*)filter01_end;
 
@@ -500,7 +500,7 @@ void re4t::init::FilterXXFixes()
 		injector::MakeJMP(pattern.get_first(15), filter01_end, true); // JMP over code that was reimplemented
 
 		// Hook Filter01Render second block (loop ran N times depending on AlphaLevel)
-		pattern = hook::pattern("D9 46 ? B9 04 00 00 00 D9");
+		pattern = re4t::pattern("D9 46 ? B9 04 00 00 00 D9");
 
 		injector::WriteMemory(pattern.get_first(0), uint8_t(0x56), true); // PUSH ESI (esi = Filter01Params*)
 		injector::MakeCALL(pattern.get_first(1), Filter01Render_Hook2, true);
@@ -513,7 +513,7 @@ void re4t::init::FilterXXFixes()
 	if (re4t::cfg->bEnableGCScopeBlur)
 	{
 		// Short-circuit Filter0aGXDraw to skip over the GXPosition etc things that we reimplement ourselves
-		auto pattern = hook::pattern("D9 45 A4 DC 15 ? ? ? ? DF E0 F6 C4 41 75 ? DC 1D ? ? ? ? DF E0 F6 C4 05 0F 8B ? ? ? ? EB");
+		auto pattern = re4t::pattern("D9 45 A4 DC 15 ? ? ? ? DF E0 F6 C4 41 75 ? DC 1D ? ? ? ? DF E0 F6 C4 05 0F 8B ? ? ? ? EB");
 		injector::WriteMemory(pattern.get_first(27), uint16_t(0xE990), true);
 
 		// Change GetEFB(1,1) to GetEFB(4,4)

@@ -131,13 +131,13 @@ void tp_scr_Hook()
 void re4t::init::ToolMenuDebug()
 {
     // Move
-    auto pattern = hook::pattern("E8 ? ? ? ? 6A 01 E8 ? ? ? ? 83 C4 08 EB EA");
+    auto pattern = re4t::pattern("E8 ? ? ? ? 6A 01 E8 ? ? ? ? 83 C4 08 EB EA");
     auto func = pattern.count(1).get(0).get<uint32_t>(0);
     ReadCall(func, move_Orig);
     InjectHook(func, move_Hook);
 
     // roomJump
-    pattern = hook::pattern("8B 0C 85 ? ? ? ? 83 C4 ? 68 ? ? ? ? FF D1 6A");
+    pattern = re4t::pattern("8B 0C 85 ? ? ? ? 83 C4 ? 68 ? ? ? ? FF D1 6A");
     uint32_t* roomJump_funcs = *pattern.count(1).get(0).get<uint32_t*>(3);
 
     roomJumpMove_Orig = (decltype(roomJumpMove_Orig))roomJump_funcs[1];
@@ -146,10 +146,10 @@ void re4t::init::ToolMenuDebug()
     // tp funcs
     if (GameVersionIsDebug())
     {
-        pattern = hook::pattern("A1 ? ? ? ? C6 80 EA 04 00 00 00 C3");
+        pattern = re4t::pattern("A1 ? ? ? ? C6 80 EA 04 00 00 00 C3");
         ToolOptionClass_ptr = *pattern.count(1).get(0).get<uint32_t*>(1);
 
-        pattern = hook::pattern("8B 0C 85 ? ? ? ? FF D1 A1 ? ? ? ? FE 80 ? ? ? ? 39 1D");
+        pattern = re4t::pattern("8B 0C 85 ? ? ? ? FF D1 A1 ? ? ? ? FE 80 ? ? ? ? 39 1D");
         uint32_t* tp_funcs = *pattern.count(1).get(0).get<uint32_t*>(3);
 
         tp_menu_Orig = (decltype(tp_menu_Orig))tp_funcs[0];

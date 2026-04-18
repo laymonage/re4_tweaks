@@ -22,7 +22,7 @@ void re4t::init::ControllerTweaks()
 {
 	// Aiming speed
 	{
-		auto pattern = hook::pattern("DD 05 ? ? ? ? DC F9 DD 05 ? ? ? ? DC FA D9 01 DE CB D9 45");
+		auto pattern = re4t::pattern("DD 05 ? ? ? ? DC F9 DD 05 ? ? ? ? DC FA D9 01 DE CB D9 45");
 		ptrAimSpeedFldAddr = *pattern.count(1).get(0).get<uint32_t*>(2);
 		struct AimSpeed
 		{
@@ -37,7 +37,7 @@ void re4t::init::ControllerTweaks()
 			}
 		}; injector::MakeInline<AimSpeed>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
-		pattern = hook::pattern("DD 05 ? ? ? ? DC F9 DD 05 ? ? ? ? DC FA D9 01");
+		pattern = re4t::pattern("DD 05 ? ? ? ? DC F9 DD 05 ? ? ? ? DC FA D9 01");
 		injector::MakeInline<AimSpeed>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
 		if (re4t::cfg->bOverrideControllerSensitivity)
@@ -50,22 +50,22 @@ void re4t::init::ControllerTweaks()
 		// No idea why this even exists since PadXinputRead also has deadzones for both sticks already. Oh well.
 		if (re4t::cfg->bRemoveExtraXinputDeadzone)
 		{
-			auto pattern = hook::pattern("C6 46 ? ? 8A 46 ? 3A C1 7D ? 81 4E ? ? ? ? ? EB"); // RS X
+			auto pattern = re4t::pattern("C6 46 ? ? 8A 46 ? 3A C1 7D ? 81 4E ? ? ? ? ? EB"); // RS X
 			injector::MakeNOP(pattern.count(1).get(0).get<uint32_t>(0), 4, true);
 
-			pattern = hook::pattern("C6 46 ? ? A1 ? ? ? ? 80 78 ? ? 75 ? F6 05"); // RS Y
+			pattern = re4t::pattern("C6 46 ? ? A1 ? ? ? ? 80 78 ? ? 75 ? F6 05"); // RS Y
 			injector::MakeNOP(pattern.count(1).get(0).get<uint32_t>(0), 4, true);
 		}
 
 		// Get deadzone pointers from PadXinputRead
-		auto pattern = hook::pattern("0F B7 0D ? ? ? ? 51 52 E8 ? ? ? ? 0F B7 4E ? D9 5E");
+		auto pattern = re4t::pattern("0F B7 0D ? ? ? ? 51 52 E8 ? ? ? ? 0F B7 4E ? D9 5E");
 		g_XInputDeadzone_LS = (int*)*pattern.count(1).get(0).get<uint32_t>(3);
 
-		pattern = hook::pattern("0F B7 05 ? ? ? ? 50 51 E8 ? ? ? ? 0F B7 46 ? D9 5E");
+		pattern = re4t::pattern("0F B7 05 ? ? ? ? 50 51 E8 ? ? ? ? 0F B7 46 ? D9 5E");
 		g_XInputDeadzone_RS = (int*)*pattern.count(1).get(0).get<uint32_t>(3);
 
 		// Capture the pre-deadzone values of the joystick inputs
-		pattern = hook::pattern("0F B7 ? ? ? ? ? 0F B7 46 BC 52");
+		pattern = re4t::pattern("0F B7 ? ? ? ? ? 0F B7 46 BC 52");
 		struct StoreRawAnalog
 		{
 			void operator()(injector::reg_pack& regs)
@@ -81,14 +81,14 @@ void re4t::init::ControllerTweaks()
 
 		// Get pointers to the floats sub_964490 use for checking if the sticks are moving.
 		// (Are these the origins of the AnalogR*_ and AnalogL*_ values?)
-		pattern = hook::pattern("D9 81 ? ? ? ? D9 81 ? ? ? ? DA E9 DF E0 F6 C4 ? 7A ? D9 81 ? ? ? ? D9");
+		pattern = re4t::pattern("D9 81 ? ? ? ? D9 81 ? ? ? ? DA E9 DF E0 F6 C4 ? 7A ? D9 81 ? ? ? ? D9");
 		fAnalogLX = (float*)*pattern.count(3).get(0).get<uint32_t>(2);
 		fAnalogLY = fAnalogLX + 1;
 		fAnalogRX = fAnalogLY + 1;
 		fAnalogRY = fAnalogRX + 1;
 
 		// Write new deadzone value right before they're loaded.
-		pattern = hook::pattern("89 56 ? 89 46 ? 8B 0D ? ? ? ? F7 81 ? ? ? ? ? ? ? ? 0F");
+		pattern = re4t::pattern("89 56 ? 89 46 ? 8B 0D ? ? ? ? F7 81 ? ? ? ? ? ? ? ? 0F");
 		struct PadXinputReadDZwrite
 		{
 			void operator()(injector::reg_pack& regs)
@@ -113,8 +113,8 @@ void re4t::init::ControllerTweaks()
 		// floats aren't 0 before assuming a controller is being used, and writing Xinput as iLastUsedController.
 		// OverrideXinputDeadzone revealed that, even in the vanilla game, this can cause false positives if the analog sticks have more than 0.1% of drift in any direction.
 		// We add a bit of tolerance here to, hopefully, get rid of any false positives.
-		auto pattern_begin = hook::pattern("75 71 D9 81 ? ? ? ? D9 81 ? ? ? ? DA E9 DF E0 F6 C4 ? 7A ? D9 81");
-		auto pattern_end = hook::pattern("7A ? 83 C1 ? 81 F9 ? ? ? ? 0F 8C ? ? ? ? 8B 4D");
+		auto pattern_begin = re4t::pattern("75 71 D9 81 ? ? ? ? D9 81 ? ? ? ? DA E9 DF E0 F6 C4 ? 7A ? D9 81");
+		auto pattern_end = re4t::pattern("7A ? 83 C1 ? 81 F9 ? ? ? ? 0F 8C ? ? ? ? 8B 4D");
 		struct LastUsedDeviceHook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -141,7 +141,7 @@ void re4t::init::ControllerTweaks()
 	// Smooth analog turning, similar to RE5's type A/B controls
 	{
 		// pl_R1_Walk
-		auto pattern = hook::pattern("8B C1 83 E0 04 33 D2 0B C2 74 ? 8B ? ? ? ? ? D9");
+		auto pattern = re4t::pattern("8B C1 83 E0 04 33 D2 0B C2 74 ? 8B ? ? ? ? ? D9");
 		static const float LXDeadZone = 0.30f;
 		static const float cPlayer__SPEED_WALK_TURN = 0.04188790545f; // game calcs this on startup, always seems to be same value
 		struct WalkTurnHook
@@ -173,7 +173,7 @@ void re4t::init::ControllerTweaks()
 		}; injector::MakeInline<WalkTurnHook>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(82));
 
 		// pl_R1_Run
-		pattern = hook::pattern("8B C1 83 E0 04 33 D2 0B C2 74 ? D9 86 A4 00 00 00 8B ? ? ? ? ? D9");
+		pattern = re4t::pattern("8B C1 83 E0 04 33 D2 0B C2 74 ? D9 86 A4 00 00 00 8B ? ? ? ? ? D9");
 		static const float cPlayer__SPEED_RUN_TURN = cPlayer__SPEED_WALK_TURN; // calculation is identical to walk turn
 		static const float pl_speed2_xxx_1216 = 1.1f;
 		struct RunTurnHook
@@ -206,7 +206,7 @@ void re4t::init::ControllerTweaks()
 
 		// pl_R1_Back
 		// FrameRateFixes: Fix character backwards turning speed
-		pattern = hook::pattern("8B C1 83 E0 04 33 D2 0B C2 74 ? D9 86 A4 00 00 00 D8");
+		pattern = re4t::pattern("8B C1 83 E0 04 33 D2 0B C2 74 ? D9 86 A4 00 00 00 D8");
 		struct WalkTurnHookNoDeadzone
 		{
 			void operator()(injector::reg_pack& regs)
@@ -232,7 +232,7 @@ void re4t::init::ControllerTweaks()
 		}; injector::MakeInline<WalkTurnHookNoDeadzone>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(62));
 
 		// pl_R1_KlauserAttack
-		pattern = hook::pattern("8B ? ? ? ? ? 8B C1 83 E0 04 33 D2 33 DB");
+		pattern = re4t::pattern("8B ? ? ? ? ? 8B C1 83 E0 04 33 D2 33 DB");
 		injector::MakeInline<WalkTurnHookNoDeadzone>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(72));
 	}
 
@@ -240,7 +240,7 @@ void re4t::init::ControllerTweaks()
 	// When using type III config, knocking an enemy into a vulnerable state while in melee range with them interrupts your gunfire until you release the trigger
 	// We just need to update joyFireOn's existing check for type II controls to check for type III controls as well
 	{
-		auto pattern = hook::pattern("8B ? ? ? ? ? 38 41 ? 74");
+		auto pattern = re4t::pattern("8B ? ? ? ? ? 38 41 ? 74");
 		struct joyFireOn_TypeIIIFix
 		{
 			void operator()(injector::reg_pack& regs)

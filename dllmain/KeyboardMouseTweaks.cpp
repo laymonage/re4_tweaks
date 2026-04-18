@@ -178,7 +178,7 @@ void re4t::init::KeyboardMouseTweaks()
 
 	// X mouse delta adjustments
 	{
-		auto pattern = hook::pattern("A3 ? ? ? ? E8 ? ? ? ? A3 ? ? ? ? 8B 85 ? ? ? ? EB ? D9 C9");
+		auto pattern = re4t::pattern("A3 ? ? ? ? E8 ? ? ? ? A3 ? ? ? ? 8B 85 ? ? ? ? EB ? D9 C9");
 		ptrMouseDeltaX = *pattern.count(1).get(0).get<uint32_t*>(1);
 		struct MouseDeltaX
 		{
@@ -199,7 +199,7 @@ void re4t::init::KeyboardMouseTweaks()
 
 	// Y mouse delta adjustments
 	{
-		auto pattern = hook::pattern("A3 ? ? ? ? E8 ? ? ? ? A3 ? ? ? ? 8B 85 ? ? ? ? EB ? E8");
+		auto pattern = re4t::pattern("A3 ? ? ? ? E8 ? ? ? ? A3 ? ? ? ? 8B 85 ? ? ? ? EB ? E8");
 		ptrMouseDeltaY = *pattern.count(1).get(0).get<uint32_t*>(1);
 		struct MouseDeltaY
 		{
@@ -265,7 +265,7 @@ void re4t::init::KeyboardMouseTweaks()
 			}
 		};
 
-		auto pattern = hook::pattern("83 3D ? ? ? ? ? 75 ? 83 3D ? ? ? ? 00 75 0E 85 C0 75 ? D9 EE D9");
+		auto pattern = re4t::pattern("83 3D ? ? ? ? ? 75 ? 83 3D ? ? ? ? 00 75 0E 85 C0 75 ? D9 EE D9");
 
 		injector::MakeInline<PlWepLockCtrlHook>(pattern.count(2).get(0).get<uint32_t>(0), pattern.count(2).get(0).get<uint32_t>(7));
 		injector::MakeInline<PlWepLockCtrlHook>(pattern.count(2).get(1).get<uint32_t>(0), pattern.count(2).get(1).get<uint32_t>(7));
@@ -300,13 +300,13 @@ void re4t::init::KeyboardMouseTweaks()
 			}
 		};
 
-		auto pattern = hook::pattern("80 3D ? ? ? ? ? D9 41 ? D9 5D ? 74");
+		auto pattern = re4t::pattern("80 3D ? ? ? ? ? D9 41 ? D9 5D ? 74");
 		injector::MakeInline<CameraLockCmp>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(7));
 
-		pattern = hook::pattern("80 3D ? ? ? ? ? 0F 84 ? ? ? ? A1 ? ? ? ? 85 C0 74");
+		pattern = re4t::pattern("80 3D ? ? ? ? ? 0F 84 ? ? ? ? A1 ? ? ? ? 85 C0 74");
 		injector::MakeInline<CameraLockCmp>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(7));
 
-		pattern = hook::pattern("80 3D ? ? ? ? ? 74 ? A1 ? ? ? ? 85 C0 74 ? 83 F8 ? 74 ? D9 05");
+		pattern = re4t::pattern("80 3D ? ? ? ? ? 74 ? A1 ? ? ? ? 85 C0 74 ? 83 F8 ? 74 ? D9 05");
 		injector::MakeInline<CameraLockCmp>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(7));
 
 		if (re4t::cfg->bDetachCameraFromAim)
@@ -315,7 +315,7 @@ void re4t::init::KeyboardMouseTweaks()
 
 	// Inventory item flip binding
 	{
-		auto pattern = hook::pattern("A1 ? ? ? ? 75 ? A8 ? 74 ? 6A ? 8B CE E8 ? ? ? ? BB");
+		auto pattern = re4t::pattern("A1 ? ? ? ? 75 ? A8 ? 74 ? 6A ? 8B CE E8 ? ? ? ? BB");
 		ptrInvMovAddr = *pattern.count(1).get(0).get<uint32_t*>(1);
 		struct InvFlip
 		{
@@ -341,7 +341,7 @@ void re4t::init::KeyboardMouseTweaks()
 	// Prevent the game from overriding your selection in the "Retry/Load" screen when moving the mouse before confirming an action.
 	{
 		// Get pointer for the state. Only reliable way I found to achieve this.
-		auto pattern = hook::pattern("C7 06 ? ? ? ? A1 ? ? ? ? F7 80 ? ? ? ? ? ? ? ? 74"); //0x48C1C0
+		auto pattern = re4t::pattern("C7 06 ? ? ? ? A1 ? ? ? ? F7 80 ? ? ? ? ? ? ? ? 74"); //0x48C1C0
 		struct RLDLGState
 		{
 			void operator()(injector::reg_pack& regs)
@@ -352,7 +352,7 @@ void re4t::init::KeyboardMouseTweaks()
 		}; injector::MakeInline<RLDLGState>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
 		// Check if the "yes/no" prompt is open before sending any index updates
-		pattern = hook::pattern("89 8F ? ? ? ? FF 85 ? ? ? ? 83 C6 ? 3B 77");
+		pattern = re4t::pattern("89 8F ? ? ? ? FF 85 ? ? ? ? 83 C6 ? 3B 77");
 		struct MouseMenuSelector
 		{
 			void operator()(injector::reg_pack& regs)
@@ -377,7 +377,7 @@ void re4t::init::KeyboardMouseTweaks()
 
 	// Fix camera after zooming with the sniper
 	{
-		auto pattern = hook::pattern("A2 ? ? ? ? A2 ? ? ? ? EB ? 81 FB ? ? ? ? 75 ? 83");
+		auto pattern = re4t::pattern("A2 ? ? ? ? A2 ? ? ? ? EB ? 81 FB ? ? ? ? 75 ? 83");
 		ptrRifleMovAddr = *pattern.count(1).get(0).get<uint32_t*>(1);
 		struct FixSniperZoom
 		{
@@ -395,7 +395,7 @@ void re4t::init::KeyboardMouseTweaks()
 	// Fix the "focus animation" not looking as strong as when triggered with a controller
 	if (re4t::cfg->bFixSniperFocus)
 	{
-		auto pattern = hook::pattern("8B F1 8B 4D ? 57 85 C9 74 ? D9 56 ? 88 56");
+		auto pattern = re4t::pattern("8B F1 8B 4D ? 57 85 C9 74 ? D9 56 ? 88 56");
 		struct FixScopeZoomFocus
 		{
 			void operator()(injector::reg_pack& regs)
@@ -424,7 +424,7 @@ void re4t::init::KeyboardMouseTweaks()
 		}; injector::MakeInline<FixScopeZoomFocus>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5));
 	
 		// This jl instruction makes the focus animation stop almost immediately when using the mouse. Noping it doesn't seem to affect the controller at all.
-		pattern = hook::pattern("7C ? C6 06 ? EB ? C7 46 ? ? ? ? ? EB ? DD D8 83 3D");
+		pattern = re4t::pattern("7C ? C6 06 ? EB ? C7 46 ? ? ? ? ? EB ? DD D8 83 3D");
 		injector::MakeNOP(pattern.count(1).get(0).get<uint32_t>(0), 2, true);
 
 		spd::log()->info("{} -> FixSniperFocus applied", __FUNCTION__);
@@ -433,7 +433,7 @@ void re4t::init::KeyboardMouseTweaks()
 	// Hooks to allow toggling sprint instead of needing to hold it
 	{
 		// pl_R1_Run first KEY_RUN check
-		auto pattern = hook::pattern("83 E0 01 33 D2 0B C2 74 ? 8B C1 83 E0 40"); // 7639EB
+		auto pattern = re4t::pattern("83 E0 01 33 D2 0B C2 74 ? 8B C1 83 E0 40"); // 7639EB
 		struct SprintToggleHook1
 		{
 			void operator()(injector::reg_pack& regs)
@@ -446,7 +446,7 @@ void re4t::init::KeyboardMouseTweaks()
 		}; injector::MakeInline<SprintToggleHook1>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5));
 
 		// pl_R1_Run second KEY_RUN check
-		pattern = hook::pattern("8B C1 83 E0 ? 33 D2 0B C2 74 ? 8B C1 83 E0 ? 0B C2 74 ? 8B CE"); // 763AE8
+		pattern = re4t::pattern("8B C1 83 E0 ? 33 D2 0B C2 74 ? 8B C1 83 E0 ? 0B C2 74 ? 8B CE"); // 763AE8
 		struct SprintToggleHook2
 		{
 			void operator()(injector::reg_pack& regs)
@@ -461,7 +461,7 @@ void re4t::init::KeyboardMouseTweaks()
 
 	// Hook pl0e_R1_Jump to allow jet-ski tricks to be performed with keyboard+mouse combos
 	{
-		auto pattern = hook::pattern("FE 86 0E 05 00 00 33 DB");
+		auto pattern = re4t::pattern("FE 86 0E 05 00 00 33 DB");
 		struct JetSkiTrickHook1
 		{
 			void operator()(injector::reg_pack& regs)
@@ -484,11 +484,11 @@ void re4t::init::KeyboardMouseTweaks()
 	if (re4t::cfg->bFallbackToEnglishKeyIcons)
 	{
 		// Get pointer to key icon data buffer
-		auto pattern = hook::pattern("53 56 57 68 00 04 00 00 6A 00 68 ? ? ? ?");
+		auto pattern = re4t::pattern("53 56 57 68 00 04 00 00 6A 00 68 ? ? ? ?");
 		g_KeyIconData = *pattern.count(1).get(0).get<uint8_t*>(0xB);
 
 		// Hook Init_KeyIconMapping so we can replace key data if needed
-		pattern = hook::pattern("53 57 E8 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? 8B 35 ? ? ? ? 8B 1D ? ? ? ?");
+		pattern = re4t::pattern("53 57 E8 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? 8B 35 ? ? ? ? 8B 1D ? ? ? ?");
 
 		auto jmp_Init_KeyIconMapping = injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0x11)).as_int();
 

@@ -61,7 +61,7 @@ void re4t::init::FrameRateFixes()
 	{
 		// Treasure (emItem_R1_Drop) (Items from bird nests are handled by another function that already has deltaTime_70 applied to it)
 		{
-			auto pattern = hook::pattern("DC 25 ? ? ? ? 6A ? 83 EC ? 8D BE ? ? ? ? D9 9E ? ? ? ? B9");
+			auto pattern = re4t::pattern("DC 25 ? ? ? ? 6A ? 83 EC ? 8D BE ? ? ? ? D9 9E ? ? ? ? B9");
 			struct emItem_R1_Drop_hook
 			{
 				void operator()(injector::reg_pack& regs)
@@ -97,7 +97,7 @@ void re4t::init::FrameRateFixes()
 		// Falling door locks (cObj12::fallMove, might affect a few other falling things too)
 		{
 			// Ajust the speed of the Y axis
-			auto pattern = hook::pattern("DC 25 ? ? ? ? 50 8D 56 ? 52 50 D9 1E E8 ? ? ? ? C7 46");
+			auto pattern = re4t::pattern("DC 25 ? ? ? ? 50 8D 56 ? 52 50 D9 1E E8 ? ? ? ? C7 46");
 			struct cObj12__fallMove_hook
 			{
 				void operator()(injector::reg_pack& regs)
@@ -147,19 +147,19 @@ void re4t::init::FrameRateFixes()
 			}; 
 			
 			// First 3
-			pattern = hook::pattern("DC 0D ? ? ? ? E8 ? ? ? ? 66 89 87");
+			pattern = re4t::pattern("DC 0D ? ? ? ? E8 ? ? ? ? 66 89 87");
 			pattern.count(3).for_each_result([&](hook::pattern_match match) {
 				injector::MakeInline<cObj12__setFall_hook>(match.get<uint32_t>(0), match.get<uint32_t>(6));
 			});
 
 			// 4, 5
-			pattern = hook::pattern("DC 0D ? ? ? ? E8 ? ? ? ? 8B ? ? 66 89 ? ? E8 ? ? ? ? D8");
+			pattern = re4t::pattern("DC 0D ? ? ? ? E8 ? ? ? ? 8B ? ? 66 89 ? ? E8 ? ? ? ? D8");
 			pattern.count(2).for_each_result([&](hook::pattern_match match) {
 				injector::MakeInline<cObj12__setFall_hook>(match.get<uint32_t>(0), match.get<uint32_t>(6));
 			});
 
 			// Last
-			pattern = hook::pattern("DC 0D ? ? ? ? E8 ? ? ? ? 8D 54 76");
+			pattern = re4t::pattern("DC 0D ? ? ? ? E8 ? ? ? ? 8D 54 76");
 			injector::MakeInline<cObj12__setFall_hook>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 		}
 	}
@@ -167,7 +167,7 @@ void re4t::init::FrameRateFixes()
 	// Fix the speed of opening drawers/boxes/cabinets/etc
 	{
 		// r104_openShelf_main, r129_openShelf_main_mb, r12a_openShelf_main_mb
-		auto pattern = hook::pattern("DC 35 ? ? ? ? 6A ? 6A ? 6A ? 6A ? 6A ? 6A ? D9 5D ? E8 ? ? ? ? 83 C4 ? BF ? ? ? ? EB");
+		auto pattern = re4t::pattern("DC 35 ? ? ? ? 6A ? 6A ? 6A ? 6A ? 6A ? 6A ? D9 5D ? E8 ? ? ? ? 83 C4 ? BF ? ? ? ? EB");
 		struct r104_r129_r12a_openShelf_main_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -190,7 +190,7 @@ void re4t::init::FrameRateFixes()
 			injector::MakeInline<r104_r129_r12a_openShelf_main_hook>(match.get<uint32_t>(0), match.get<uint32_t>(6));
 		});
 
-		pattern = hook::pattern("E8 ? ? ? ? 83 C4 04 4F 75 DE 5F 5E 8B E5 5D C3");
+		pattern = re4t::pattern("E8 ? ? ? ? 83 C4 04 4F 75 DE 5F 5E 8B E5 5D C3");
 		struct r104_r129_r12a_openShelf_main_hook_new_timer
 		{
 			void operator()(injector::reg_pack& regs)
@@ -226,7 +226,7 @@ void re4t::init::FrameRateFixes()
 		});
 
 		// r106_openShelf_main, r128_openShelf_main_mb, r507_openShelf_main_mb
-		pattern = hook::pattern("DD 05 ? ? ? ? 6A ? DC F9 6A ? 6A ? 6A ? 6A ? 6A ? D9 C9 D9");
+		pattern = re4t::pattern("DD 05 ? ? ? ? 6A ? DC F9 6A ? 6A ? 6A ? 6A ? 6A ? D9 C9 D9");
 		struct r106_r128_r507_openShelf_main_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -249,7 +249,7 @@ void re4t::init::FrameRateFixes()
 			injector::MakeInline<r106_r128_r507_openShelf_main_hook>(match.get<uint32_t>(0), match.get<uint32_t>(6));
 		});
 
-		pattern = hook::pattern("D9 45 ? D8 80 ? ? ? ? D9 98 ? ? ? ? E8 ? ? ? ? 83 C4 ? 4B 75 ? 5B 5F");
+		pattern = re4t::pattern("D9 45 ? D8 80 ? ? ? ? D9 98 ? ? ? ? E8 ? ? ? ? 83 C4 ? 4B 75 ? 5B 5F");
 		struct r106_r128_r507_openShelf_main_hook_new_timer
 		{
 			void operator()(injector::reg_pack& regs)
@@ -282,7 +282,7 @@ void re4t::init::FrameRateFixes()
 		});
 
 		// r20d_openShelf_main
-		pattern = hook::pattern("DC 25 ? ? ? ? D9 98 ? ? ? ? 8B 87");
+		pattern = re4t::pattern("DC 25 ? ? ? ? D9 98 ? ? ? ? 8B 87");
 		struct r20d_openShelf_main_hook_pos
 		{
 			void operator()(injector::reg_pack& regs)
@@ -347,7 +347,7 @@ void re4t::init::FrameRateFixes()
 		}; injector::MakeInline<r20d_openShelf_main_hook_new_timer>(pattern.count(1).get(0).get<uint32_t>(36), pattern.count(1).get(0).get<uint32_t>(41));
 
 		// r20e_openShelf_main
-		pattern = hook::pattern("DD 05 ? ? ? ? D9 80 ? ? ? ? 6A 01 D8 C1 D9 98");
+		pattern = re4t::pattern("DD 05 ? ? ? ? D9 80 ? ? ? ? 6A 01 D8 C1 D9 98");
 		struct r20e_openShelf_main_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -394,7 +394,7 @@ void re4t::init::FrameRateFixes()
 		}; injector::MakeInline<r20e_openShelf_main_hook_new_timer>(pattern.count(1).get(0).get<uint32_t>(40), pattern.count(1).get(0).get<uint32_t>(45));
 
 		// r104_openBox_main, r129_openBox_main_mb, r12a_openBox_main_mb, r200_openBox_main, r22e_openBox_main_mb
-		pattern = hook::pattern("DC 05 ? ? ? ? D9 98 ? ? ? ? E8 ? ? ? ? 83 C4 ? 4F 75 ? 5F 5E 5D C3");
+		pattern = re4t::pattern("DC 05 ? ? ? ? D9 98 ? ? ? ? E8 ? ? ? ? 83 C4 ? 4F 75 ? 5F 5E 5D C3");
 		struct r104_r129_r12a_r200_r22e_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -446,7 +446,7 @@ void re4t::init::FrameRateFixes()
 		});
 
 		// r202_openBox_main, r20e_openBox_main
-		pattern = hook::pattern("D9 05 ? ? ? ? 57 51 8D 45 ? D9 1C ? 50 8D 4D");
+		pattern = re4t::pattern("D9 05 ? ? ? ? 57 51 8D 45 ? D9 1C ? 50 8D 4D");
 		struct r202_r20e_openBox_main_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -465,10 +465,10 @@ void re4t::init::FrameRateFixes()
 			}
 		}; injector::MakeInline<r202_r20e_openBox_main_hook>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
-		pattern = hook::pattern("D9 05 ? ? ? ? 57 51 8D 55 ? D9 1C ? 52 8D 45"); // r20e_openBox_main
+		pattern = re4t::pattern("D9 05 ? ? ? ? 57 51 8D 55 ? D9 1C ? 52 8D 45"); // r20e_openBox_main
 		injector::MakeInline<r202_r20e_openBox_main_hook>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
-		pattern = hook::pattern("E8 ? ? ? ? 83 C4 10 4F 75 DD 5F 8B 4D FC 33 CD 5E E8 ? ? ? ? 8B E5 5D C3");
+		pattern = re4t::pattern("E8 ? ? ? ? 83 C4 10 4F 75 DD 5F 8B 4D FC 33 CD 5E E8 ? ? ? ? 8B E5 5D C3");
 		struct r202_r20e_openBox_main_hook_new_timer
 		{
 			void operator()(injector::reg_pack& regs)
@@ -501,7 +501,7 @@ void re4t::init::FrameRateFixes()
 		});
 
 		// r326_openBox_main, r51b_openBox_main_mb
-		pattern = hook::pattern("D9 05 ? ? ? ? 51 8D 45 ? D9 1C ? 50 8D 4D ? 51 E8 ? ? ? ? D9 05 ? ? ? ? 83 C4");
+		pattern = re4t::pattern("D9 05 ? ? ? ? 51 8D 45 ? D9 1C ? 50 8D 4D ? 51 E8 ? ? ? ? D9 05 ? ? ? ? 83 C4");
 		struct r326_r51b_openBox_main_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -525,7 +525,7 @@ void re4t::init::FrameRateFixes()
 			injector::MakeInline<r326_r51b_openBox_main_hook>(match.get<uint32_t>(23), match.get<uint32_t>(29));
 		});
 
-		pattern = hook::pattern("E8 ? ? ? ? 83 C4 04 FF 4D C8 75 9F 8B 4D FC 5F 5E 33 CD 5B E8 ? ? ? ? 8B E5 5D C3");
+		pattern = re4t::pattern("E8 ? ? ? ? 83 C4 04 FF 4D C8 75 9F 8B 4D FC 5F 5E 33 CD 5B E8 ? ? ? ? 8B E5 5D C3");
 		struct r326_r51b_openBox_main_hook_new_timer
 		{
 			void operator()(injector::reg_pack& regs)
@@ -558,7 +558,7 @@ void re4t::init::FrameRateFixes()
 		});
 
 		// r20d_openDrawer_main 
-		pattern = hook::pattern("D9 05 ? ? ? ? 53 51 8D 45 ? D9 1C ? 50 8D 4D");
+		pattern = re4t::pattern("D9 05 ? ? ? ? 53 51 8D 45 ? D9 1C ? 50 8D 4D");
 		struct r20d_openDrawer_main_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -577,7 +577,7 @@ void re4t::init::FrameRateFixes()
 			}
 		}; injector::MakeInline<r20d_openDrawer_main_hook>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
-		pattern = hook::pattern("E8 ? ? ? ? 83 C4 04 4B 75 CD 5B 8B 4D FC 5F 33 CD 5E E8 ? ? ? ? 8B E5");
+		pattern = re4t::pattern("E8 ? ? ? ? 83 C4 04 4B 75 CD 5B 8B 4D FC 5F 33 CD 5E E8 ? ? ? ? 8B E5");
 		struct r20d_openDrawer_main_hook_new_timer
 		{
 			void operator()(injector::reg_pack& regs)
@@ -606,7 +606,7 @@ void re4t::init::FrameRateFixes()
 		}; injector::MakeInline<r20d_openDrawer_main_hook_new_timer>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5));
 
 		// r107_openKiln_main
-		pattern = hook::pattern("DC 35 ? ? ? ? 6A ? 6A ? 6A ? 6A ? 6A ? 6A ? D9");
+		pattern = re4t::pattern("DC 35 ? ? ? ? 6A ? 6A ? 6A ? 6A ? 6A ? 6A ? D9");
 		struct r107_openKiln_main_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -625,7 +625,7 @@ void re4t::init::FrameRateFixes()
 			}
 		}; injector::MakeInline<r107_openKiln_main_hook>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
-		pattern = hook::pattern("8B 87 ? ? ? ? D8 80 ? ? ? ? D9 98 ? ? ? ? E8 ? ? ? ? 83 C4 ? 4B 75 ? 5B");
+		pattern = re4t::pattern("8B 87 ? ? ? ? D8 80 ? ? ? ? D9 98 ? ? ? ? E8 ? ? ? ? 83 C4 ? 4B 75 ? 5B");
 		struct r107_openKiln_main_hook_new_timer
 		{
 			void operator()(injector::reg_pack& regs)
@@ -654,7 +654,7 @@ void re4t::init::FrameRateFixes()
 		}; injector::MakeInline<r107_openKiln_main_hook_new_timer>(pattern.count(1).get(0).get<uint32_t>(18), pattern.count(1).get(0).get<uint32_t>(23));
 
 		// r315_TanaOpen, r515_TanaOpen
-		pattern = hook::pattern("D9 05 ? ? ? ? 83 C4 ? D9 5D ? 83 FE ? 75 ? D9 05 ? ? ? ? D9 5D ? BF");
+		pattern = re4t::pattern("D9 05 ? ? ? ? 83 C4 ? D9 5D ? 83 FE ? 75 ? D9 05 ? ? ? ? D9 5D ? BF");
 		struct r315_r515_TanaOpen_hook_1_pos
 		{
 			void operator()(injector::reg_pack& regs)
@@ -696,7 +696,7 @@ void re4t::init::FrameRateFixes()
 			injector::MakeInline<r315_r515_TanaOpen_hook_1_neg>(match.get<uint32_t>(17), match.get<uint32_t>(23));
 		});
 
-		pattern = hook::pattern("E8 ? ? ? ? 83 C4 08 4F 75 DE 5F 5E 5D C3");
+		pattern = re4t::pattern("E8 ? ? ? ? 83 C4 08 4F 75 DE 5F 5E 5D C3");
 		struct r315_r515_TanaOpen_hook_new_timer
 		{
 			void operator()(injector::reg_pack& regs)
@@ -729,7 +729,7 @@ void re4t::init::FrameRateFixes()
 		});
 
 		// sub_7B49E0 (secret compartment in r50f's box)
-		pattern = hook::pattern("DC 25 ? ? ? ? D9 9E ? ? ? ? 6A ? E8 ? ? ? ? 83");
+		pattern = re4t::pattern("DC 25 ? ? ? ? D9 9E ? ? ? ? 6A ? E8 ? ? ? ? 83");
 		struct sub_7B49E0_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -776,7 +776,7 @@ void re4t::init::FrameRateFixes()
 		}; injector::MakeInline<sub_7B49E0_hook_new_timer>(pattern.count(1).get(0).get<uint32_t>(14), pattern.count(1).get(0).get<uint32_t>(19));
 
 		// OpenBoxMain
-		pattern = hook::pattern("E8 ? ? ? ? 83 C4 18 5D E9 ? ? ? ? 3D ? ? ? ? 75 1A 6A FF 6A 36");
+		pattern = re4t::pattern("E8 ? ? ? ? 83 C4 18 5D E9 ? ? ? ? 3D ? ? ? ? 75 1A 6A FF 6A 36");
 		ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), OpenBoxMain_orig);
 		InjectHook(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), OpenBoxMain_hook, HookType::Jump);
 	}
@@ -784,7 +784,7 @@ void re4t::init::FrameRateFixes()
 	// Walls/etc/etc
 	{
 		// r20d_moveWall
-		auto pattern = hook::pattern("DC 35 ? ? ? ? 6A ? D9 5D ? E8 ? ? ? ? 83 C4 ? A3");
+		auto pattern = re4t::pattern("DC 35 ? ? ? ? 6A ? D9 5D ? E8 ? ? ? ? 83 C4 ? A3");
 		struct r20d_moveWall_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -803,7 +803,7 @@ void re4t::init::FrameRateFixes()
 			}
 		}; injector::MakeInline<r20d_moveWall_hook>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
-		pattern = hook::pattern("E8 ? ? ? ? 83 C4 04 47 89 7D E8");
+		pattern = re4t::pattern("E8 ? ? ? ? 83 C4 04 47 89 7D E8");
 		struct r20d_moveWall_hook_new_timer
 		{
 			void operator()(injector::reg_pack& regs)
@@ -831,7 +831,7 @@ void re4t::init::FrameRateFixes()
 		}; injector::MakeInline<r20d_moveWall_hook_new_timer>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5));
 
 		// r20e_moveCrestDoor
-		pattern = hook::pattern("DC 05 ? ? ? ? D9 9E ? ? ? ? E8 ? ? ? ? 83 C4 04 4F 75 E1 A1");
+		pattern = re4t::pattern("DC 05 ? ? ? ? D9 9E ? ? ? ? E8 ? ? ? ? 83 C4 04 4F 75 E1 A1");
 		struct r20e_moveCrestDoor_opening_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -877,7 +877,7 @@ void re4t::init::FrameRateFixes()
 			}
 		}; injector::MakeInline<r20e_moveCrestDoor_opening_hook_new_timer>(pattern.count(1).get(0).get<uint32_t>(12), pattern.count(1).get(0).get<uint32_t>(17));
 
-		pattern = hook::pattern("DC 05 ? ? ? ? D9 5D ? D9 81 ? ? ? ? DE D9");
+		pattern = re4t::pattern("DC 05 ? ? ? ? D9 5D ? D9 81 ? ? ? ? DE D9");
 		struct r20e_moveCrestDoor_closing_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -900,11 +900,11 @@ void re4t::init::FrameRateFixes()
 			}
 		}; injector::MakeInline<r20e_moveCrestDoor_closing_hook>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
-		pattern = hook::pattern("DC 05 ? ? ? ? D9 5D ? D9 86 ? ? ? ? D9 81");
+		pattern = re4t::pattern("DC 05 ? ? ? ? D9 5D ? D9 86 ? ? ? ? D9 81");
 		injector::MakeInline<r20e_moveCrestDoor_closing_hook>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
 		// r20e_moveArmorStatue
-		pattern = hook::pattern("DD 05 ? ? ? ? 09 46 ? D8 F9 09 47");
+		pattern = re4t::pattern("DD 05 ? ? ? ? 09 46 ? D8 F9 09 47");
 		struct r20e_moveArmorStatue_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -923,7 +923,7 @@ void re4t::init::FrameRateFixes()
 			}
 		}; injector::MakeInline<r20e_moveArmorStatue_hook>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
-		pattern = hook::pattern("E8 ? ? ? ? 83 C4 04 4B 75 CA 8B 96 ? ? ? ? D9 05 ? ? ? ? D9 92");
+		pattern = re4t::pattern("E8 ? ? ? ? 83 C4 04 4B 75 CA 8B 96 ? ? ? ? D9 05 ? ? ? ? D9 92");
 		struct r20e_moveArmorStatue_hook_new_timer
 		{
 			void operator()(injector::reg_pack& regs)
@@ -952,7 +952,7 @@ void re4t::init::FrameRateFixes()
 		}; injector::MakeInline<r20e_moveArmorStatue_hook_new_timer>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5));
 
 		// r21b_DoorOpen
-		pattern = hook::pattern("DC 25 ? ? ? ? D9 9E ? ? ? ? E8 ? ? ? ? D9 05 ? ? ? ? 83 C4 ? D8 96");
+		pattern = re4t::pattern("DC 25 ? ? ? ? D9 9E ? ? ? ? E8 ? ? ? ? D9 05 ? ? ? ? 83 C4 ? D8 96");
 		struct r21b_DoorOpen_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -973,7 +973,7 @@ void re4t::init::FrameRateFixes()
 		}; injector::MakeInline<r21b_DoorOpen_hook>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
 		// r21b_GetDragonBall
-		pattern = hook::pattern("DC 25 ? ? ? ? D9 1E E8 ? ? ? ? D9 05 ? ? ? ? 83 C4");
+		pattern = re4t::pattern("DC 25 ? ? ? ? D9 1E E8 ? ? ? ? D9 05 ? ? ? ? 83 C4");
 		struct r21b_GetDragonBall_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -994,7 +994,7 @@ void re4t::init::FrameRateFixes()
 		}; injector::MakeInline<r21b_GetDragonBall_hook>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
 		// R31bExecFallRoom
-		pattern = hook::pattern("33 C5 89 45 ? 53 8B 5D ? 8B 04 9D");
+		pattern = re4t::pattern("33 C5 89 45 ? 53 8B 5D ? 8B 04 9D");
 		struct R31bExecFallRoom_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -1012,7 +1012,7 @@ void re4t::init::FrameRateFixes()
 		}; injector::MakeInline<R31bExecFallRoom_hook>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5));
 
 		// cR31CDoor::close 
-		pattern = hook::pattern("D9 05 ? ? ? ? 80 48 ? ? 8B 46 ? 80 48 ? ? D9 5E");
+		pattern = re4t::pattern("D9 05 ? ? ? ? 80 48 ? ? 8B 46 ? 80 48 ? ? D9 5E");
 		struct cR31CDoor__close_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -1032,7 +1032,7 @@ void re4t::init::FrameRateFixes()
 		}; injector::MakeInline<cR31CDoor__close_hook>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));	
 		
 		// r327_DoorOpen
-		pattern = hook::pattern("DC 05 ? ? ? ? D9 9E ? ? ? ? E8 ? ? ? ? D9 05 ? ? ? ? 83 C4 ? D8 96");
+		pattern = re4t::pattern("DC 05 ? ? ? ? D9 9E ? ? ? ? E8 ? ? ? ? D9 05 ? ? ? ? 83 C4 ? D8 96");
 		struct r327_DoorOpen_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -1052,7 +1052,7 @@ void re4t::init::FrameRateFixes()
 		}; injector::MakeInline<r327_DoorOpen_hook>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
 		// r501_openCover_mb
-		pattern = hook::pattern("DC 35 ? ? ? ? D9 5D ? D9 80 ? ? ? ? D9 C9 DC 0D ? ? ? ? DE E9 D9 98");
+		pattern = re4t::pattern("DC 35 ? ? ? ? D9 5D ? D9 80 ? ? ? ? D9 C9 DC 0D ? ? ? ? DE E9 D9 98");
 		struct r501_openCover_mb_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -1071,7 +1071,7 @@ void re4t::init::FrameRateFixes()
 			}
 		}; injector::MakeInline<r501_openCover_mb_hook>(pattern.count(2).get(0).get<uint32_t>(0), pattern.count(2).get(0).get<uint32_t>(6));
 
-		pattern = hook::pattern("E8 ? ? ? ? 83 C4 04 4F 75 DE 8B 86 ? ? ? ? D9");
+		pattern = re4t::pattern("E8 ? ? ? ? 83 C4 04 4F 75 DE 8B 86 ? ? ? ? D9");
 		struct r501_openCover_mb_hook_new_timer
 		{
 			void operator()(injector::reg_pack& regs)
@@ -1100,7 +1100,7 @@ void re4t::init::FrameRateFixes()
 		}; injector::MakeInline<r501_openCover_mb_hook_new_timer>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5));
 
 		// cR50fDoor::open
-		pattern = hook::pattern("DC 05 ? ? ? ? D9 98 ? ? ? ? 8B 4E ? D9 46 ? D8 46 ? D9 81 ? ? ? ? D8 D9 DF E0 F6 C4 ? 75 ? D9 99 ? ? ? ? FE 46 ? 5E");
+		pattern = re4t::pattern("DC 05 ? ? ? ? D9 98 ? ? ? ? 8B 4E ? D9 46 ? D8 46 ? D9 81 ? ? ? ? D8 D9 DF E0 F6 C4 ? 75 ? D9 99 ? ? ? ? FE 46 ? 5E");
 		struct cR50fDoor__open_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -1120,7 +1120,7 @@ void re4t::init::FrameRateFixes()
 		}; injector::MakeInline<cR50fDoor__open_hook>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
 		// cR50fDoor::close
-		pattern = hook::pattern("D9 05 ? ? ? ? 50 D9 5E 1C 6A 00 6A 00 05 ? ? ? ? 50 6A 26 E8");
+		pattern = re4t::pattern("D9 05 ? ? ? ? 50 D9 5E 1C 6A 00 6A 00 05 ? ? ? ? 50 6A 26 E8");
 		struct cR50fDoor__close_hook_1
 		{
 			void operator()(injector::reg_pack& regs)
@@ -1139,7 +1139,7 @@ void re4t::init::FrameRateFixes()
 			}
 		}; injector::MakeInline<cR50fDoor__close_hook_1>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
-		pattern = hook::pattern("DC 25 ? ? ? ? D9 5D FC D9 45 FC D9 56 1C D8 80 ? ? ? ? D9 98");
+		pattern = re4t::pattern("DC 25 ? ? ? ? D9 5D FC D9 45 FC D9 56 1C D8 80 ? ? ? ? D9 98");
 		struct cR50fDoor__close_hook_2
 		{
 			void operator()(injector::reg_pack& regs)
@@ -1170,7 +1170,7 @@ void re4t::init::FrameRateFixes()
 		}; injector::MakeInline<cR50fDoor__close_hook_2>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 		
 		// R50fExecCageMain_mb
-		pattern = hook::pattern("DE CA D9 C9 DC 35 ? ? ? ? DE E9 D9 5D ? D9");
+		pattern = re4t::pattern("DE CA D9 C9 DC 35 ? ? ? ? DE E9 D9 5D ? D9");
 		struct R50fExecCageMain_mb_hook_1
 		{
 			void operator()(injector::reg_pack& regs)
@@ -1193,7 +1193,7 @@ void re4t::init::FrameRateFixes()
 		injector::MakeInline<R50fExecCageMain_mb_hook_1>(pattern.count(6).get(1).get<uint32_t>(4), pattern.count(6).get(1).get<uint32_t>(10));
 		injector::MakeInline<R50fExecCageMain_mb_hook_1>(pattern.count(6).get(2).get<uint32_t>(4), pattern.count(6).get(2).get<uint32_t>(10));
 
-		pattern = hook::pattern("89 75 ? 83 FE ? 0F 8C ? ? ? ? 8B 0D ? ? ? ? 6A");
+		pattern = re4t::pattern("89 75 ? 83 FE ? 0F 8C ? ? ? ? 8B 0D ? ? ? ? 6A");
 		struct R50fExecCageMain_mb_hook_new_timer
 		{
 			void operator()(injector::reg_pack& regs)
@@ -1225,7 +1225,7 @@ void re4t::init::FrameRateFixes()
 		}; injector::MakeInline<R50fExecCageMain_mb_hook_new_timer>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
 		// r405_em_set (Door opening)
-		pattern = hook::pattern("DC 05 ? ? ? ? 6A 01 D9 98 ? ? ? ? E8 ? ? ? ? 83 C4 08");
+		pattern = re4t::pattern("DC 05 ? ? ? ? 6A 01 D9 98 ? ? ? ? E8 ? ? ? ? 83 C4 08");
 		struct r405_em_set_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -1272,7 +1272,7 @@ void re4t::init::FrameRateFixes()
 		}; injector::MakeInline<r405_em_set_hook_new_timer>(pattern.count(1).get(0).get<uint32_t>(14), pattern.count(1).get(0).get<uint32_t>(19));
 
 		// r502_OpenCloseCover, r108_openCover
-		pattern = hook::pattern("DC 05 ? ? ? ? 8B 15 ? ? ? ? 83 C4 ? D9 5D ? D9 45");
+		pattern = re4t::pattern("DC 05 ? ? ? ? 8B 15 ? ? ? ? 83 C4 ? D9 5D ? D9 45");
 		struct r108_r502_Cover_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -1296,7 +1296,7 @@ void re4t::init::FrameRateFixes()
 		});
 
 		// sub_7A32B0 (r502's gate)
-		pattern = hook::pattern("DC 25 ? ? ? ? 68 ? ? ? ? D9 98 ? ? ? ? E8");
+		pattern = re4t::pattern("DC 25 ? ? ? ? 68 ? ? ? ? D9 98 ? ? ? ? E8");
 		struct sub_7A32B0_hook_1
 		{
 			void operator()(injector::reg_pack& regs)
@@ -1316,7 +1316,7 @@ void re4t::init::FrameRateFixes()
 			}
 		}; injector::MakeInline<sub_7A32B0_hook_1>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
-		pattern = hook::pattern("DC 05 ? ? ? ? 68 ? ? ? ? D9 98 ? ? ? ? E8");
+		pattern = re4t::pattern("DC 05 ? ? ? ? 68 ? ? ? ? D9 98 ? ? ? ? E8");
 		struct sub_7A32B0_hook_2
 		{
 			void operator()(injector::reg_pack& regs)
@@ -1335,7 +1335,7 @@ void re4t::init::FrameRateFixes()
 			}
 		}; injector::MakeInline<sub_7A32B0_hook_2>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
-		pattern = hook::pattern("E8 ? ? ? ? 83 C4 ? 4E 75 ? 8B 0D ? ? ? ? 8B 91 ? ? ? ? 56 52 E8");
+		pattern = re4t::pattern("E8 ? ? ? ? 83 C4 ? 4E 75 ? 8B 0D ? ? ? ? 8B 91 ? ? ? ? 56 52 E8");
 		struct sub_7A32B0_hook_new_timer
 		{
 			void operator()(injector::reg_pack& regs)
@@ -1368,7 +1368,7 @@ void re4t::init::FrameRateFixes()
 		});
 
 		// r305_ShutterCtrl
-		pattern = hook::pattern("B9 ? ? ? ? F7 F9 C7 45 ? ? ? ? ? 81 C2 ? ? ? ? 89");
+		pattern = re4t::pattern("B9 ? ? ? ? F7 F9 C7 45 ? ? ? ? ? 81 C2 ? ? ? ? 89");
 		struct r305_ShutterCtrl_hook_1
 		{
 			void operator()(injector::reg_pack& regs)
@@ -1388,7 +1388,7 @@ void re4t::init::FrameRateFixes()
 			}
 		}; injector::MakeInline<r305_ShutterCtrl_hook_1>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5));
 
-		pattern = hook::pattern("81 C2 ? ? ? ? 89 55 DC E9 ? ? ? ? 80 B9 ? ? ? ? ? 74 08 8B 81");
+		pattern = re4t::pattern("81 C2 ? ? ? ? 89 55 DC E9 ? ? ? ? 80 B9 ? ? ? ? ? 74 08 8B 81");
 		struct r305_ShutterCtrl_hook_2
 		{
 			void operator()(injector::reg_pack& regs)
@@ -1409,7 +1409,7 @@ void re4t::init::FrameRateFixes()
 		}; injector::MakeInline<r305_ShutterCtrl_hook_2>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
 		// cR305Shutter::open 
-		pattern = hook::pattern("DC 05 ? ? ? ? D9 98 ? ? ? ? 8B 4E 04 D9 46 14");
+		pattern = re4t::pattern("DC 05 ? ? ? ? D9 98 ? ? ? ? 8B 4E 04 D9 46 14");
 		struct cR305Shutter__open_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -1430,7 +1430,7 @@ void re4t::init::FrameRateFixes()
 		}; injector::MakeInline<cR305Shutter__open_hook>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
 		// cR305Shutter::close
-		pattern = hook::pattern("D9 05 ? ? ? ? 8B 46 30 D9 5E 18 6A 00 50 E8 ? ? ? ? 8B");
+		pattern = re4t::pattern("D9 05 ? ? ? ? 8B 46 30 D9 5E 18 6A 00 50 E8 ? ? ? ? 8B");
 		struct cR305Shutter__close_hook_1
 		{
 			void operator()(injector::reg_pack& regs)
@@ -1450,7 +1450,7 @@ void re4t::init::FrameRateFixes()
 			}
 		}; injector::MakeInline<cR305Shutter__close_hook_1>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
-		pattern = hook::pattern("DC 25 ? ? ? ? D9 5E ? D9 81 ? ? ? ? D9 46 ? DE D9 DF E0 F6 C4 ? 0F 85 ? ? ? ? D9 46 ? D9 99");
+		pattern = re4t::pattern("DC 25 ? ? ? ? D9 5E ? D9 81 ? ? ? ? D9 46 ? DE D9 DF E0 F6 C4 ? 0F 85 ? ? ? ? D9 46 ? D9 99");
 		struct cR305Shutter__close_hook_2
 		{
 			void operator()(injector::reg_pack& regs)
@@ -1499,7 +1499,7 @@ void re4t::init::FrameRateFixes()
 			}
 		};
 
-		auto pattern = hook::pattern("D8 25 ? ? ? ? D9 ? A4 00 00 00");
+		auto pattern = re4t::pattern("D8 25 ? ? ? ? D9 ? A4 00 00 00");
 
 		// 0x766069 - pl_R1_Crouch
 		// 0x7660b6 - pl_R1_Crouch
@@ -1522,7 +1522,7 @@ void re4t::init::FrameRateFixes()
 			}
 		};
 
-		pattern = hook::pattern("D8 05 ? ? ? ? D9 ? A4 00 00 00");
+		pattern = re4t::pattern("D8 05 ? ? ? ? D9 ? A4 00 00 00");
 
 		// 0x76607b - pl_R1_Crouch
 		// 0x7660a4 - pl_R1_Crouch
@@ -1536,7 +1536,7 @@ void re4t::init::FrameRateFixes()
 	{
 		static float fMercsDeltaTimer = 0.0F;
 
-		auto pattern = hook::pattern("A1 ? ? ? ? 80 ? ? 00 74 ? 6A 0E"); // R400Main());
+		auto pattern = re4t::pattern("A1 ? ? ? ? 80 ? ? 00 74 ? 6A 0E"); // R400Main());
 		struct MercsModeFPSFix
 		{
 			void operator()(injector::reg_pack& regs)
@@ -1556,7 +1556,7 @@ void re4t::init::FrameRateFixes()
 	// Copy delta-time related code from cSubChar::moveBust to cPlAshley::moveBust
 	// Seems to make Ashley bust physics speed match between 30 & 60FPS
 	{
-		auto pattern = hook::pattern("57 E8 ? ? ? ? 8B 06 8B 50 0C 00 1D");
+		auto pattern = re4t::pattern("57 E8 ? ? ? ? 8B 06 8B 50 0C 00 1D");
 
 		// Hook struct
 		struct AshleyBustFrametimeFix
@@ -1581,17 +1581,17 @@ void re4t::init::FrameRateFixes()
 	// Workaround for lag spike when many models are first shown on screen
 	// forces game to treat all models as on-screen for a single tick after loading
 	// allowing game to process/cache whatever data was causing lag spike
-	auto pattern = hook::pattern("8B 4F 08 50 8D 55 ? 52 89 4D ? E8 ? ? ? ?"); // AddOtModelPosRadius
+	auto pattern = re4t::pattern("8B 4F 08 50 8D 55 ? 52 89 4D ? E8 ? ? ? ?"); // AddOtModelPosRadius
 	auto caller = pattern.count(2).get(1).get<uint8_t>(0xB);
 	ReadCall(caller, collision_sphere_hexahedron);
 	InjectHook(caller, collision_sphere_hexahedron_Hook, HookType::Call);
 
-	pattern = hook::pattern("39 91 80 84 00 00 0F 85 ? ? ? ? E8 ? ? ? ?"); // gameStageInit
+	pattern = re4t::pattern("39 91 80 84 00 00 0F 85 ? ? ? ? E8 ? ? ? ?"); // gameStageInit
 	caller = (uint8_t*)injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(0xC)).as_int();
 	ReadCall(caller, NowLoadingOff);
 	InjectHook(caller, NowLoadingOff_Hook, HookType::Jump);
 
-	pattern = hook::pattern("D8 D1 DF E0 DD D9 F6 C4 41 75 ? D9 C0 D9 EE DA E9 DF E0 F6 C4 44 7A");
+	pattern = re4t::pattern("D8 D1 DF E0 DD D9 F6 C4 41 75 ? D9 C0 D9 EE DA E9 DF E0 F6 C4 44 7A");
 
 	struct ModelRenderDistHack
 	{

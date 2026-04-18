@@ -148,17 +148,17 @@ void re4t::init::DisplayModeFix()
 		// We now reimplement the entire function and use EnumDisplaySettings to get a list of all resolutions available, avoiding duplicates and only
 		// showing the highest refresh rate for each unique width and height, if needed.
 		// Using EnumDisplaySettings is what DXVK does as well, so this should hopefully be fine.
-		auto pattern = hook::pattern("E8 ? ? ? ? A1 ? ? ? ? 83 C4 08 3B C7");
+		auto pattern = re4t::pattern("E8 ? ? ? ? A1 ? ? ? ? 83 C4 08 3B C7");
 		auto ptr_D3D_FillDisplayModeVector = injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int();
 		InjectHook(ptr_D3D_FillDisplayModeVector, D3D_FillDisplayModeVector_hook);
 
 		// Use the game's own std::vector<D3D_DisplayMode>::push_back function to push values to its display vector, othewise issue can happen.
-		pattern = hook::pattern("E8 ? ? ? ? 8B 4D E8 41 89 4D E8 3B 4D E4");
+		pattern = re4t::pattern("E8 ? ? ? ? 8B 4D E8 41 89 4D E8 3B 4D E4");
 		ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), bio4__vector_D3D_DisplayMode__push_back);
 
 		// Hook D3D_GetDisplayModeForWidthHeight to manipulate its filter, so we can use our own refresh rate instead.
 		// This function was originally only capable of returning 60 Hz resolutions, which is quite an oversight on QLOC's part.
-		pattern = hook::pattern("8B 45 ? 83 F8 ? 75 ? 8B 4D ? 8B 7D ? 3B 4D");
+		pattern = re4t::pattern("8B 45 ? 83 F8 ? 75 ? 8B 4D ? 8B 7D ? 3B 4D");
 		struct D3D_GetDisplayModeForWidthHeight_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -172,7 +172,7 @@ void re4t::init::DisplayModeFix()
 
 		// Hook GXInit_Impl right after the game calls ConfigReadINI() so we can determine which refresh rate the game should
 		// use on startup based on what is stored in it's config.ini.
-		pattern = hook::pattern("8B 85 ? ? ? ? 8B 8D ? ? ? ? 8D 95 ? ? ? ? 52 50 51 E8 ? ? ? ? 83 C4");
+		pattern = re4t::pattern("8B 85 ? ? ? ? 8B 8D ? ? ? ? 8D 95 ? ? ? ? 52 50 51 E8 ? ? ? ? 83 C4");
 		struct StartupRefreshRate_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -263,7 +263,7 @@ void re4t::init::DisplayModeFix()
 		}; injector::MakeInline<StartupRefreshRate_hook>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
 		// Hook D3D_SetupPresentationGlobals
-		pattern = hook::pattern("89 35 ? ? ? ? 89 15 ? ? ? ? A3 ? ? ? ? 89");
+		pattern = re4t::pattern("89 35 ? ? ? ? 89 15 ? ? ? ? A3 ? ? ? ? 89");
 		struct D3D_SetupPresentationGlobals_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -276,7 +276,7 @@ void re4t::init::DisplayModeFix()
 		}; injector::MakeInline<D3D_SetupPresentationGlobals_hook>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));	
 		
 		// Hook OptionScreen::init to also take g_D3D_RefreshRate into consideration when initiating g_GfxSettings_ResolutionIdx
-		pattern = hook::pattern("8B 15 ? ? ? ? 3B 14 ? 75 ? 8B 15 ? ? ? ? 3B 54 38");
+		pattern = re4t::pattern("8B 15 ? ? ? ? 3B 14 ? 75 ? 8B 15 ? ? ? ? 3B 54 38");
 		struct OptionScreen__init_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -291,11 +291,11 @@ void re4t::init::DisplayModeFix()
 		}; injector::MakeInline<OptionScreen__init_hook>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
 		// Hook sprinf_1 call inside graphics_menu so we can also display the refresh rate next to the resolution
-		pattern = hook::pattern("E8 ? ? ? ? 8B 35 ? ? ? ? 83 C4 10 85 F6");
+		pattern = re4t::pattern("E8 ? ? ? ? 8B 35 ? ? ? ? 83 C4 10 85 F6");
 		InjectHook(pattern.count(1).get(0).get<uint32_t>(0), sprintf_1_hook);
 
 		// Hook just before the previous sprinf_1 call to store the refresh rate of the currently shown/selected resolution
-		pattern = hook::pattern("8B 48 04 8B 10 51 52 68 ? ? ? ? 68 ? ? ? ? E8");
+		pattern = re4t::pattern("8B 48 04 8B 10 51 52 68 ? ? ? ? 68 ? ? ? ? E8");
 		struct res_sprintf_getCurRefreshRate_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -310,7 +310,7 @@ void re4t::init::DisplayModeFix()
 		}; injector::MakeInline<res_sprintf_getCurRefreshRate_hook>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5));
 
 		// Hook ConfigWriteINI to make sure the current resolution is being saved correctly
-		pattern = hook::pattern("8B 4E ? 8B 56 ? 8B 06 51 8B 8D ? ? ? ? 52 50 68");
+		pattern = re4t::pattern("8B 4E ? 8B 56 ? 8B 06 51 8B 8D ? ? ? ? 52 50 68");
 		struct WriteIniHook
 		{
 			void operator()(injector::reg_pack& regs)

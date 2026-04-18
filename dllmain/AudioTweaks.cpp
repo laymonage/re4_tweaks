@@ -95,42 +95,42 @@ uint32_t __cdecl knife_r3_fire10_SndCall_Hook(uint16_t blk, uint16_t call_no, Ve
 void re4t::init::AudioTweaks()
 {
 	// Hook Snd_set_system_vol so we can override volume values with our own after game updates them
-	auto pattern = hook::pattern("B8 10 00 00 00 0F B6 55 ? 52 50 E8 ? ? ? ? 83 C4");
+	auto pattern = re4t::pattern("B8 10 00 00 00 0F B6 55 ? 52 50 E8 ? ? ? ? 83 C4");
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0xB)).as_int(), Snd_set_system_vol);
 	InjectHook(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0xB)).as_int(), Snd_set_system_vol_Hook);
 
 	// Hook mwPlySetOutVol so we can override FMV volume, and store mwply handle to allow updating volume during runtime
-	pattern = hook::pattern("6A 9C 56 E8 ? ? ? ?");
+	pattern = re4t::pattern("6A 9C 56 E8 ? ? ? ?");
 	ReadCall(pattern.count(1).get(0).get<uint32_t>(3), mwPlySetOutVol);
 	InjectHook(pattern.count(1).get(0).get<uint32_t>(3), mwPlySetOutVol_Hook, HookType::Call);
 
 	// Fetch addr of SND_STR structs
-	pattern = hook::pattern("6B C0 5C 05 ? ? ? ? 5D C3");
+	pattern = re4t::pattern("6B C0 5C 05 ? ? ? ? 5D C3");
 	str_work = *pattern.count(2).get(0).get<SND_STR*>(4);
 
 	// Find Snd_str_work_calc_ax_vol so we can update volume of SND_STR correctly
-	pattern = hook::pattern("8A 46 4C A8 01 74 ? A8 04 75 ? 56 E8 ? ? ? ? 83 C4 04");
+	pattern = re4t::pattern("8A 46 4C A8 01 74 ? A8 04 75 ? 56 E8 ? ? ? ? 83 C4 04");
 	ReadCall(pattern.count(1).get(0).get<uint32_t>(0xC), Snd_str_work_calc_ax_vol);
 
 	// Find SYNSetMasterVolume so we can tell XAudio to update volume
-	pattern = hook::pattern("D9 1C ? 52 50 E8 ? ? ? ? 8B 07 83 C4 ? 5F");
+	pattern = re4t::pattern("D9 1C ? 52 50 E8 ? ? ? ? 8B 07 83 C4 ? 5F");
 	ReadCall(pattern.count(1).get(0).get<uint32_t>(0x5), SYNSetMasterVolume);
 
 	// Find Snd_search_seq_work_seq_no
-	pattern = hook::pattern("56 E8 ? ? ? ? 83 C4 ? 66 83 78 4C 00 74");
+	pattern = re4t::pattern("56 E8 ? ? ? ? 83 C4 ? 66 83 78 4C 00 74");
 	ReadCall(pattern.count(1).get(0).get<uint32_t>(0x1), Snd_search_seq_work_seq_no);
 
 	// Find Snd_seq_work_calc_ax_vol
-	pattern = hook::pattern("F6 46 56 01 74 ? 56 E8 ? ? ? ? DB 46 64");
+	pattern = re4t::pattern("F6 46 56 01 74 ? 56 E8 ? ? ? ? DB 46 64");
 	ReadCall(pattern.count(1).get(0).get<uint32_t>(0x7), Snd_seq_work_calc_ax_vol);
 
 	// Hook SndCall call inside knife_r3_fire10 to allow restoring original GC knife sound effect
-	pattern = hook::pattern("83 C0 ? 50 6A 03 6A 01 E8");
+	pattern = re4t::pattern("83 C0 ? 50 6A 03 6A 01 E8");
 	InjectHook(pattern.count(1).get(0).get<uint32_t>(8), knife_r3_fire10_SndCall_Hook, HookType::Call);
 
 	// Silence armored Ashley
 	{
-		auto pattern = hook::pattern("83 C4 ? 80 BA ? ? ? ? 02 75 ? 83 FF ? 77 ? 0F B6 87 ? ? ? ? FF 24 85 ? ? ? ? BE");
+		auto pattern = re4t::pattern("83 C4 ? 80 BA ? ? ? ? 02 75 ? 83 FF ? 77 ? 0F B6 87 ? ? ? ? FF 24 85 ? ? ? ? BE");
 		struct ClankClanklHook
 		{
 			void operator()(injector::reg_pack& regs)

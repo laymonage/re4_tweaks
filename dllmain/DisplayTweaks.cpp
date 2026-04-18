@@ -207,18 +207,18 @@ int __stdcall D3DXCreateTextureFromFileInMemoryEx_Hook(
 void re4t::init::MultithreadFix()
 {
 	// Clear D3DCREATE_MULTITHREADED flag from D3D CreateDevice call for slight FPS improvement
-	auto pattern = hook::pattern("68 ? ? ? ? 68 ? ? ? ? 6A 44 56 8B 35");
+	auto pattern = re4t::pattern("68 ? ? ? ? 68 ? ? ? ? 6A 44 56 8B 35");
 	auto ptr_CreateDevice_BehaviorFlags = pattern.count(1).get(0).get<uint8_t>(0xB);
 	Patch(ptr_CreateDevice_BehaviorFlags, uint8_t(*ptr_CreateDevice_BehaviorFlags & ~D3DCREATE_MULTITHREADED));
 
 	// Game has a pair of nullsubs that are always called just before graphics-threading related code is used
 	// Kinda seems like they were meant to be a pair of funcs for locking/unlocking a mutex, but that's just a guess.
 	// Restore these so that flag removal above can be made more stable
-	pattern = hook::pattern("E8 ? ? ? ? A1 ? ? ? ? A3 ? ? ? ? 89 1D ? ? ? ? A3 ? ? ? ? E8 ? ? ? ? 8B 35");
+	pattern = re4t::pattern("E8 ? ? ? ? A1 ? ? ? ? A3 ? ? ? ? 89 1D ? ? ? ? A3 ? ? ? ? E8 ? ? ? ? 8B 35");
 	auto ptr_D3D_LockMutex = injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int();
 	InjectHook(ptr_D3D_LockMutex, D3D_LockMutex_Hook);
 
-	pattern = hook::pattern("E8 ? ? ? ? 68 ? ? ? ? FF 15 ? ? ? ? A1 ? ? ? ? 50 FF 15");
+	pattern = re4t::pattern("E8 ? ? ? ? 68 ? ? ? ? FF 15 ? ? ? ? A1 ? ? ? ? 50 FF 15");
 	auto ptr_D3D_UnlockMutex = injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int();
 	InjectHook(ptr_D3D_UnlockMutex, D3D_UnlockMutex_Hook);
 
@@ -227,24 +227,24 @@ void re4t::init::MultithreadFix()
 	// Hook the misbehaving calls so we can add UnlockMutex calls to them
 	// (not sure if this is safest way to do it though - game seems to do something with the ptr returned by D3DXCreate...
 	// maybe UnlockMutex should be after it's finished with that ptr, would be harder to patch in tho...)
-	pattern = hook::pattern("53 E8 ? ? ? ? 50 E8 ? ? ? ? 8B 36 8B 0E 8D 55 ?");
+	pattern = re4t::pattern("53 E8 ? ? ? ? 50 E8 ? ? ? ? 8B 36 8B 0E 8D 55 ?");
 	auto ptr_caller1 = pattern.count(1).get(0).get<uint32_t>(7); // 0x98009D
 	ReadCall(ptr_caller1, D3DXCreateTextureFromFileInMemoryEx_Orig);
 	InjectHook(ptr_caller1, D3DXCreateTextureFromFileInMemoryEx_Hook);
 
-	pattern = hook::pattern("57 E8 ? ? ? ? 50 E8 ? ? ? ? 8B 06 8B 10 8B 52 ? 8D 4D ?"); // 0x980234 & 0x981049
+	pattern = re4t::pattern("57 E8 ? ? ? ? 50 E8 ? ? ? ? 8B 06 8B 10 8B 52 ? 8D 4D ?"); // 0x980234 & 0x981049
 	InjectHook(pattern.count(2).get(0).get<uint32_t>(7), D3DXCreateTextureFromFileInMemoryEx_Hook);
 	InjectHook(pattern.count(2).get(1).get<uint32_t>(7), D3DXCreateTextureFromFileInMemoryEx_Hook);
 
-	pattern = hook::pattern("53 E8 ? ? ? ? 50 E8 ? ? ? ? 8B 36 8B 0E 8D 55 ? 52"); // 0x9E4B82, unused?
+	pattern = re4t::pattern("53 E8 ? ? ? ? 50 E8 ? ? ? ? 8B 36 8B 0E 8D 55 ? 52"); // 0x9E4B82, unused?
 	InjectHook(pattern.count(1).get(0).get<uint32_t>(7), D3DXCreateTextureFromFileInMemoryEx_Hook);
 
-	pattern = hook::pattern("57 E8 ? ? ? ? 50 E8 ? ? ? ? 8D 4D ? 8B F8 8B 06 8B 10 8B 52 ?"); // 0x9E6619
+	pattern = re4t::pattern("57 E8 ? ? ? ? 50 E8 ? ? ? ? 8D 4D ? 8B F8 8B 06 8B 10 8B 52 ?"); // 0x9E6619
 	InjectHook(pattern.count(1).get(0).get<uint32_t>(7), D3DXCreateTextureFromFileInMemoryEx_Hook);
 
 	// Lone UnlockMutex call at 0x955792 - doesn't have a LockMutex call before it for some reason
 	// this would cause game crash on startup, and skipping it caused game crash on exit - nopping it instead seems to fix both
-	pattern = hook::pattern("89 0D ? ? ? ? A3 ? ? ? ? 89 99 ? ? ? ? 89 99 ? ? ? ? E8 ? ? ? ?");
+	pattern = re4t::pattern("89 0D ? ? ? ? A3 ? ? ? ? 89 99 ? ? ? ? 89 99 ? ? ? ? E8 ? ? ? ?");
 	Nop(pattern.count(1).get(0).get<uint8_t>(0x17), 5);
 
 	spd::log()->info("MultithreadFix applied");
@@ -258,15 +258,15 @@ void re4t::init::DisplayTweaks()
 	if (re4t::cfg->bReplaceFramelimiter)
 	{
 		// nop beginning of framelimiter code (sets up thread affinity to core 0)
-		auto pattern = hook::pattern("A3 ? ? ? ? 6A 00 FF 15 ? ? ? ? 50 FF");
+		auto pattern = re4t::pattern("A3 ? ? ? ? 6A 00 FF 15 ? ? ? ? 50 FF");
 		uint8_t* framelimiterStart = pattern.count(1).get(0).get<uint8_t>(5);
-		pattern = hook::pattern("E8 ? ? ? ? 85 C0 75 ? D9 EE EB ?");
+		pattern = re4t::pattern("E8 ? ? ? ? 85 C0 75 ? D9 EE EB ?");
 		uint8_t* framelimiterEnd = pattern.count(1).get(0).get<uint8_t>(0);
 		Nop(framelimiterStart, framelimiterEnd - framelimiterStart); // 6549C3 to 6549D9 (1.1.0)
 
-		pattern = hook::pattern("B9 ? ? ? ? E8 ? ? ? ? 84 C0 74 ? E8 ? ? ? ? 83 F8 1E");
+		pattern = re4t::pattern("B9 ? ? ? ? E8 ? ? ? ? 84 C0 74 ? E8 ? ? ? ? 83 F8 1E");
 		framelimiterStart = pattern.count(1).get(0).get<uint8_t>(0xA); // 654A1E
-		pattern = hook::pattern("8D 85 ? ? ? ? 50 FF D3 DF AD ? ? ? ? 8D 8D");
+		pattern = re4t::pattern("8D 85 ? ? ? ? 50 FF D3 DF AD ? ? ? ? 8D 8D");
 		framelimiterEnd = pattern.count(1).get(0).get<uint8_t>(0); // 654B0A
 
 		Nop(framelimiterStart, framelimiterEnd - framelimiterStart);
@@ -289,7 +289,7 @@ void re4t::init::DisplayTweaks()
 
 	// Hook function that loads the FOV
 	{
-		auto pattern = hook::pattern("D9 45 ? 89 4E ? D9 5E ? 8B 8D ? ? ? ? 89 46 ? 8B 85 ? ? ? ? 8D 7E");
+		auto pattern = re4t::pattern("D9 45 ? 89 4E ? D9 5E ? 8B 8D ? ? ? ? 89 46 ? 8B 85 ? ? ? ? 8D 7E");
 		struct ScaleFOV
 		{
 			void operator()(injector::reg_pack& regs)
@@ -314,7 +314,7 @@ void re4t::init::DisplayTweaks()
 	{
 		// See D3D9Hook.cpp -> hook_Direct3D9::CreateDevice and hook_Direct3D9::Reset
 
-		auto pattern = hook::pattern("8B 56 ? 8B 85 ? ? ? ? 83 C4 ? 52 68 ? ? ? ? 50");
+		auto pattern = re4t::pattern("8B 56 ? 8B 85 ? ? ? ? 83 C4 ? 52 68 ? ? ? ? 50");
 		struct WriteIniHook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -331,7 +331,7 @@ void re4t::init::DisplayTweaks()
 	// Restore missing transparency in the item pickup screen by
 	// removing a call to GXCopyTex inside ItemExamine::gxDraw
 	{
-		auto pattern = hook::pattern("E8 ? ? ? ? D9 05 ? ? ? ? D9 7D ? 6A ? 0F B7 45");
+		auto pattern = re4t::pattern("E8 ? ? ? ? D9 05 ? ? ? ? D9 7D ? 6A ? 0F B7 45");
 		ptrGXCopyTex = injector::GetBranchDestination(pattern.get_first(0)).as_int();
 		ptrAfterItemExamineHook = (uintptr_t)pattern.count(1).get(0).get<uint32_t>(5);
 		injector::MakeNOP(pattern.get_first(0), 5);
@@ -343,7 +343,7 @@ void re4t::init::DisplayTweaks()
 
 	// Override laser sight colors
 	{
-		auto pattern = hook::pattern("D9 05 ? ? ? ? D9 99 ? ? ? ? 8B 55 ? D9 05 ? ? ? ? D9");
+		auto pattern = re4t::pattern("D9 05 ? ? ? ? D9 99 ? ? ? ? 8B 55 ? D9 05 ? ? ? ? D9");
 		ptrLaserR = *pattern.count(1).get(0).get<uint32_t*>(2);
 		ptrLaserG = *pattern.count(1).get(0).get<uint32_t*>(17);
 		ptrLaserB = *pattern.count(1).get(0).get<uint32_t*>(32);
@@ -392,16 +392,16 @@ void re4t::init::DisplayTweaks()
 			}
 		}; 
 		
-		pattern = hook::pattern("A1 ? ? ? ? D9 5D ? 83 F8 ? 75 ? 8B 15 ? ? ? ? D9 45 ? 8B 0D ? ? ? ? 83");
+		pattern = re4t::pattern("A1 ? ? ? ? D9 5D ? 83 F8 ? 75 ? 8B 15 ? ? ? ? D9 45 ? 8B 0D ? ? ? ? 83");
 		injector::MakeInline<DrawLaserStruct>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5));
 
-		pattern = hook::pattern("a1 ? ? ? ? 83 f8 ? 75 ? 8b 0d ? ? ? ? d9 45 ? 8b 15 ? ? ? ? 83 ec");
+		pattern = re4t::pattern("a1 ? ? ? ? 83 f8 ? 75 ? 8b 0d ? ? ? ? d9 45 ? 8b 15 ? ? ? ? 83 ec");
 		injector::MakeInline<DrawLaserStruct>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5));
 	}
 
 	// Disable Filter03 for now, as we have yet to find a way to actually fix it
 	{
-		auto pattern = hook::pattern("E8 ? ? ? ? B9 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? 39 1D");
+		auto pattern = re4t::pattern("E8 ? ? ? ? B9 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? 39 1D");
 		ptrFilter03 = injector::GetBranchDestination(pattern.get_first(0)).as_int();
 		struct DisableBrokenFilter03
 		{
@@ -417,7 +417,7 @@ void re4t::init::DisplayTweaks()
 
 	// Fix a problem related to a vertex buffer that caused the image to be slightly blurred
 	{
-		auto pattern = hook::pattern("E8 ? ? ? ? 8B 15 ? ? ? ? A1 ? ? ? ? 8B 08 6A ? 6A ? 52");
+		auto pattern = re4t::pattern("E8 ? ? ? ? 8B 15 ? ? ? ? A1 ? ? ? ? 8B 08 6A ? 6A ? 52");
 		ptrNonBlurryVertex = *pattern.count(1).get(0).get<uint32_t*>(7); // Replacement buffer
 
 		// Hook struct
@@ -433,12 +433,12 @@ void re4t::init::DisplayTweaks()
 		};
 
 		// First buffer
-		pattern = hook::pattern("8B 15 ? ? ? ? A1 ? ? ? ? 8B 08 56 57 6A ? 6A");
+		pattern = re4t::pattern("8B 15 ? ? ? ? A1 ? ? ? ? 8B 08 56 57 6A ? 6A");
 		ptrBlurryVertex = *pattern.count(1).get(0).get<uint32_t*>(2);
 		injector::MakeInline<BlurryBuffer>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
 		// Second buffer
-		pattern = hook::pattern("D9 5D ? FF D0 D9 E8 A1 ? ? ? ? 8B 08 8B 91 ? ? ? ? 6A ? 51 D9 1C ? 68");
+		pattern = re4t::pattern("D9 5D ? FF D0 D9 E8 A1 ? ? ? ? 8B 08 8B 91 ? ? ? ? 6A ? 51 D9 1C ? 68");
 		injector::MakeInline<BlurryBuffer>(pattern.count(1).get(0).get<uint32_t>(40), pattern.count(1).get(0).get<uint32_t>(46));
 
 		if (re4t::cfg->bFixBlurryImage)
@@ -447,7 +447,7 @@ void re4t::init::DisplayTweaks()
 
 	// Disable film grain (Esp04)
 	{
-		auto pattern = hook::pattern("55 8B EC 83 EC ? A1 ? ? ? ? 33 C5 89 45 ? 56 8B 75 ? 0F B6 4E");
+		auto pattern = re4t::pattern("55 8B EC 83 EC ? A1 ? ? ? ? 33 C5 89 45 ? 56 8B 75 ? 0F B6 4E");
 		ptrAfterEsp04TransHook = (uintptr_t)pattern.count(1).get(0).get<uint32_t>(6);
 		injector::MakeNOP(pattern.get_first(0), 6);
 		injector::MakeJMP(pattern.get_first(0), Esp04TransHook, true);
@@ -458,7 +458,7 @@ void re4t::init::DisplayTweaks()
 
 	// Improve Water
 	{
-		auto pattern = hook::pattern("DC 0D ? ? ? ? D9 59 ? 3C ? 72 ? C6 45 ? ? 8B 9D");
+		auto pattern = re4t::pattern("DC 0D ? ? ? ? D9 59 ? 3C ? 72 ? C6 45 ? ? 8B 9D");
 		struct FixWaterScaling
 		{
 			void operator()(injector::reg_pack& regs)

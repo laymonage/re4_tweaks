@@ -281,29 +281,29 @@ BOOL __stdcall MoveWindow_Hook(HWND hWnd, int X, int Y, int nWidth, int nHeight,
 void re4t::init::WndProcHook()
 {
 	// CreateWindowEx hook
-	auto pattern = hook::pattern("68 00 00 00 80 56 68 ? ? ? ? 68 ? ? ? ? 6A 00");
+	auto pattern = re4t::pattern("68 00 00 00 80 56 68 ? ? ? ? 68 ? ? ? ? 6A 00");
 	injector::MakeNOP(pattern.count(1).get(0).get<uint32_t>(18), 6);
 	injector::MakeCALL(pattern.count(1).get(0).get<uint32_t>(18), CreateWindowExA_Hook, true);
 
 	// WndProc hook
-	pattern = hook::pattern("C7 45 ? ? ? ? ? 89 75 ? 89 75 ? 89 45 ? FF 15 ? ? ? ? 6A");
+	pattern = re4t::pattern("C7 45 ? ? ? ? ? 89 75 ? 89 75 ? 89 45 ? FF 15 ? ? ? ? 6A");
 	uint32_t* wndproc_addr = pattern.count(1).get(0).get<uint32_t>(3);
 	uint32_t GameWndProcAddr = *(uint32_t*)wndproc_addr;
 	GameWndProc = (LRESULT(WINAPI*)(HWND, UINT, WPARAM, LPARAM))GameWndProcAddr;
 	injector::WriteMemory<uint32_t>(wndproc_addr, (uint32_t)&WndProc_hook, true);
 
 	// Hook AdjustWindowRectEx call inside sub_93A0B0 to apply our style changes
-	pattern = hook::pattern("FF 15 ? ? ? ? 8B 4D ? 2B 4D ? 8B 55");
+	pattern = re4t::pattern("FF 15 ? ? ? ? 8B 4D ? 2B 4D ? 8B 55");
 	injector::MakeNOP(pattern.count(1).get(0).get<uint32_t>(0), 6);
 	InjectHook(pattern.count(1).get(0).get<uint32_t>(0), AdjustWindowRectEx_Hook, HookType::Call);
 
 	// Hook SetWindowPos call inside sub_93A0B0 to apply our custom X Y window position
-	pattern = hook::pattern("FF 15 ? ? ? ? 56 53 57 8D 45 EC 50");
+	pattern = re4t::pattern("FF 15 ? ? ? ? 56 53 57 8D 45 EC 50");
 	injector::MakeNOP(pattern.count(1).get(0).get<uint32_t>(0), 6);
 	InjectHook(pattern.count(1).get(0).get<uint32_t>(0), SetWindowPos_Hook, HookType::Call);
 
 	// Same as before
-	pattern = hook::pattern("FF 15 ? ? ? ? 8B 0D ? ? ? ? 6A 01");
+	pattern = re4t::pattern("FF 15 ? ? ? ? 8B 0D ? ? ? ? 6A 01");
 	injector::MakeNOP(pattern.count(1).get(0).get<uint32_t>(0), 6);
 	InjectHook(pattern.count(1).get(0).get<uint32_t>(0), MoveWindow_Hook, HookType::Call);
 }

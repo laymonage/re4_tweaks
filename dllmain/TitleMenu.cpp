@@ -74,15 +74,15 @@ void re4t::init::TitleMenu()
 	// Restore Gamecube title menu pan and zoom controls
 	{
 		// hook the titleLoop call with our own reimplementation
-		auto pattern = hook::pattern("E8 ? ? ? ? 83 C4 04 E8 ? ? ? ? 33 DB 53");
+		auto pattern = re4t::pattern("E8 ? ? ? ? 83 C4 04 E8 ? ? ? ? 33 DB 53");
 		InjectHook(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), titleLoop_hook, HookType::Jump);
 
 		// don't reset scroll_add_5C in titleMenuInit, otherwise scrolling will reset when leaving submenus like 'Help & Options'
-		pattern = hook::pattern("D9 5E 5C C6 46 58 00 39");
+		pattern = re4t::pattern("D9 5E 5C C6 46 58 00 39");
 		injector::MakeNOP(pattern.count(1).get(0).get<uint8_t>(0), 7);
 
 		// reset scroll_add_5C when leaving Assignment Ada & Mercenaries 
-		pattern = hook::pattern("C7 06 01 00 00 00 E8 ? ? ? ? 57");
+		pattern = re4t::pattern("C7 06 01 00 00 00 E8 ? ? ? ? 57");
 		struct titleSub_resetScrollAdd
 		{
 			void operator()(injector::reg_pack& regs)
@@ -95,7 +95,7 @@ void re4t::init::TitleMenu()
 		}; injector::MakeInline<titleSub_resetScrollAdd>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
 		// reset scroll_add_5C when leaving Separate Ways
-		pattern = hook::pattern("C7 45 F4 00 00 00 FF 8B ? ? 52 8B C8 51 50");
+		pattern = re4t::pattern("C7 45 F4 00 00 00 FF 8B ? ? 52 8B C8 51 50");
 		struct titleAda_resetScrollAdd
 		{
 			void operator()(injector::reg_pack& regs)
@@ -110,7 +110,7 @@ void re4t::init::TitleMenu()
 
 	// Force the original title menu background on completed saves
 	{
-		auto pattern = hook::pattern("F7 41 ? ? ? ? ? 6A ? 6A ? 6A ? 0F 85 ? ? ? ? 8B 46");
+		auto pattern = re4t::pattern("F7 41 ? ? ? ? ? 6A ? 6A ? 6A ? 0F 85 ? ? ? ? 8B 46");
 		struct titleSet_bgCheckHook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -127,7 +127,7 @@ void re4t::init::TitleMenu()
 
 	// Skip difficulty select on a fresh system save while in NTSC mode, or when OverrideDifficulty is enabled
 	{
-		auto pattern = hook::pattern("B8 04 00 00 00 5B 8B E5");
+		auto pattern = re4t::pattern("B8 04 00 00 00 5B 8B E5");
 		struct titleMenuSelect_SkipLevelSelect
 		{
 			void operator()(injector::reg_pack& regs)
@@ -142,7 +142,7 @@ void re4t::init::TitleMenu()
 		}; injector::MakeInline<titleMenuSelect_SkipLevelSelect>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5));
 
 		// Japanese: ignore language_8 check in the TTL_CMD_START case
-		pattern = hook::pattern("38 59 08 0F 84 09 0B 00 00");
+		pattern = re4t::pattern("38 59 08 0F 84 09 0B 00 00");
 		injector::MakeNOP(pattern.count(1).get(0).get<uint32_t>(3), 6); // titleMain
 	}
 
@@ -164,11 +164,11 @@ void re4t::init::TitleMenu()
 
 		static bool insideLevelMenu = false;
 
-		static uint8_t* mouseMenuNum = hook::pattern("03 7C ? BA 01 00 00 00 8B").count(1).get(0).get<uint8_t>(0);
-		static uint32_t* snd_id_1654 = *hook::pattern("A3 ? ? ? ? 5F 5E 8B E5 5D").count(1).get(0).get<uint32_t*>(1);
+		static uint8_t* mouseMenuNum = re4t::pattern("03 7C ? BA 01 00 00 00 8B").count(1).get(0).get<uint8_t>(0);
+		static uint32_t* snd_id_1654 = *re4t::pattern("A3 ? ? ? ? 5F 5E 8B E5 5D").count(1).get(0).get<uint32_t*>(1);
 
-		auto pattern_begin = hook::pattern("8B ? ? ? ? ? 8B ? ? ? ? ? 8B C1 25 00 00 00 40 81 E7 00 20 00 00 0B C7 74 ? 33");
-		auto pattern_end = hook::pattern("C6 86 80 00 00 00 08 88 4E 03");
+		auto pattern_begin = re4t::pattern("8B ? ? ? ? ? 8B ? ? ? ? ? 8B C1 25 00 00 00 40 81 E7 00 20 00 00 0B C7 74 ? 33");
+		auto pattern_end = re4t::pattern("C6 86 80 00 00 00 08 88 4E 03");
 		struct titleAda_levelMenu
 		{
 			enum TitleAda
@@ -335,7 +335,7 @@ void re4t::init::TitleMenu()
 		}; injector::MakeInline<titleAda_levelMenu>(pattern_begin.count(1).get(0).get<uint32_t>(0), pattern_end.count(1).get(0).get<uint32_t>(14));
 
 		// gameInit: don't overwrite Professional mode difficulty for Separate Ways or Assignment Ada
-		auto pattern = hook::pattern("F7 40 54 00 10 00 C0 74 ? C6 80 7C 84 00 00 05 A1");
+		auto pattern = re4t::pattern("F7 40 54 00 10 00 C0 74 ? C6 80 7C 84 00 00 05 A1");
 		struct gameInit_AdaPro
 		{
 			void operator()(injector::reg_pack& regs)

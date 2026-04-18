@@ -21,10 +21,10 @@ void re4t::init::HDProject()
 		float fOrigScale = 0.5f;
 		static double dNewScale = fOrigScale / fOptionsScale;
 
-		auto pattern = hook::pattern("DC 0D ? ? ? ? D9 C0 DD 05 ? ? ? ? DC C9 D9 07 DE C2 D9 C9 E8 ? ? ? ? DB 86");
+		auto pattern = re4t::pattern("DC 0D ? ? ? ? D9 C0 DD 05 ? ? ? ? DC C9 D9 07 DE C2 D9 C9 E8 ? ? ? ? DB 86");
 		injector::WriteMemory(pattern.count(1).get(0).get<uint32_t>(2), &dNewScale, true);
 
-		pattern = hook::pattern("DC 0D ? ? ? ? D9 C0 DE CA D9 47 ? DE C2 D9 C9 E8 ? ? ? ? D9 C9 0F B7 ? E8");
+		pattern = re4t::pattern("DC 0D ? ? ? ? D9 C0 DE CA D9 47 ? DE C2 D9 C9 E8 ? ? ? ? D9 C9 0F B7 ? E8");
 		injector::WriteMemory(pattern.count(1).get(0).get<uint32_t>(2), &dNewScale, true);
 
 		if (re4t::cfg->bVerboseLog)
@@ -41,7 +41,7 @@ void re4t::init::HDProject()
 	// BIO4\SS\cmn\NowLoading.fix
 	// BIO4\Title\xxx_press_Start.fix
 	{
-		auto pattern = hook::pattern("89 4E ? 89 56 ? 85 FF 75 ? 43 83 C6 ? 3B 5D ? 0F 8C ? ? ? ? 8B");
+		auto pattern = re4t::pattern("89 4E ? 89 56 ? 85 FF 75 ? 43 83 C6 ? 3B 5D ? 0F 8C ? ? ? ? 8B");
 		struct sub_9E6580_hook
 		{
 			void operator()(injector::reg_pack& regs)

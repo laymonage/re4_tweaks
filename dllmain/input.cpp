@@ -4,6 +4,7 @@
  */
 
 #include "input.hpp"
+#include "Sections.h"
 #include <algorithm>
 #include <unordered_map>
 #include <cassert>
@@ -11,7 +12,6 @@
 #include <log.h>
 #include <eHooking/Hook.h>
 #include <injector/include/injector/assembly.hpp>
-#include <ModUtils/Patterns.h>
 
 static std::shared_mutex s_windows_mutex;
 static std::unordered_map<HWND, unsigned int> s_raw_input_windows;
@@ -819,7 +819,7 @@ void re4t::input::init()
 	// everything has been rendered. This is currently replacing a call to "systemVSyncPost", but that is a nullsub in RE4 UHD. If we 
 	// ever restore that for some reason, we should move this somewhere else.
 	{
-		auto pattern = hook::pattern("81 60 54 FF FF FF EF E8 ? ? ? ? E8");
+		auto pattern = re4t::pattern("81 60 54 FF FF FF EF E8 ? ? ? ? E8");
 		struct MainLoop_InputNext_hook
 		{
 			void operator()(injector::reg_pack& regs)

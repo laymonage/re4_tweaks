@@ -340,14 +340,14 @@ void re4t::init::CommandLine()
 
 			// This func first searches for the string we want to override, then searches for references to the addr of it, then patches them to point to destAddr
 			auto PatchCodeRefsToData = [](std::string_view pattern_str, int numReferences, std::string* destAddr, uintptr_t* lastPatchedAddr = nullptr) {
-				auto pattern = hook::pattern(pattern_str);
+				auto pattern = re4t::pattern(pattern_str);
 				uint32_t addr = (uint32_t)pattern.count(1).get(0).get<uint8_t>(0);
 				uint8_t* addr_bytes = (uint8_t*)&addr;
 
 				char searchStr[256];
 				sprintf_s(searchStr, "68 %02X %02X %02X %02X", addr_bytes[0], addr_bytes[1], addr_bytes[2], addr_bytes[3]);
 
-				pattern = hook::pattern(searchStr).count(numReferences);
+				pattern = re4t::pattern(searchStr).count(numReferences);
 
 				for (int i = 0; i < numReferences; i++)
 				{
@@ -372,17 +372,17 @@ void re4t::init::CommandLine()
 				uint8_t* addr_bytes = (uint8_t*)&bio4_addr;
 
 				sprintf_s(searchStr, "C7 45 ? %02X %02X %02X %02X", addr_bytes[0], addr_bytes[1], addr_bytes[2], addr_bytes[3]);
-				Patch(hook::pattern(searchStr).count(1).get(0).get<uint32_t>(3), g_GameDir_Root.c_str());
+				Patch(re4t::pattern(searchStr).count(1).get(0).get<uint32_t>(3), g_GameDir_Root.c_str());
 
 				sprintf_s(searchStr, "%02X %02X %02X %02X DB 0F C9 40", addr_bytes[0], addr_bytes[1], addr_bytes[2], addr_bytes[3]);
-				Patch(hook::pattern(searchStr).count(1).get(0).get<uint32_t>(0), g_GameDir_Root.c_str());
+				Patch(re4t::pattern(searchStr).count(1).get(0).get<uint32_t>(0), g_GameDir_Root.c_str());
 
 				// TODO: two spots inside DVDConvertPathToEntrynum use strncmp/strncat with a fixed size of 4 (for BIO4 string)
 				// We patch the size here to fix that, but that limits path size to 256... would be better if we can get rid of the fixed size somehow
 				// Or reimplement DVDConvertPathToEntrynum entirely?
-				auto pattern = hook::pattern("E9 ? ? ? ? 6A 04 68 ? ? ? ? 56 E8 ? ? ? ?");
+				auto pattern = re4t::pattern("E9 ? ? ? ? 6A 04 68 ? ? ? ? 56 E8 ? ? ? ?");
 				Patch(pattern.count(1).get(0).get<uint8_t>(6), uint8_t(g_GameDir_Root.length()));
-				pattern = hook::pattern("51 E8 ? ? ? ? 6A 04 8D 95");
+				pattern = re4t::pattern("51 E8 ? ? ? ? 6A 04 8D 95");
 				Patch(pattern.count(1).get(0).get<uint8_t>(7), uint8_t(g_GameDir_Root.length()));
 			}
 
@@ -408,7 +408,7 @@ void re4t::init::CommandLine()
 			// uvdata_XX
 			{
 				// JP only references uvdata_jp & uvdata, try scanning for jp filename
-				auto pattern = hook::pattern("42 49 4F 34 2F 75 76 64 61 74 61 5F 6A 70 2E 74 33 64 00");
+				auto pattern = re4t::pattern("42 49 4F 34 2F 75 76 64 61 74 61 5F 6A 70 2E 74 33 64 00");
 				if (pattern.size() > 0)
 				{
 					PatchCodeRefsToData("42 49 4F 34 2F 75 76 64 61 74 61 5F 6A 70 2E 74 33 64 00", 1, &g_GameDir_uvdata_jp);
@@ -429,7 +429,7 @@ void re4t::init::CommandLine()
 
 				// TODO: similar issue inside sub_977080 as the DVDConvertPathToEntrynum issue above, func uses a fixed size of 9
 				// We can patch the size to fix it, but that again limits us to path size ~256...
-				auto pattern = hook::pattern("56 E8 ? ? ? ? 6A 09 68 ? ? ? ?");
+				auto pattern = re4t::pattern("56 E8 ? ? ? ? 6A 09 68 ? ? ? ?");
 				Patch(pattern.count(1).get(0).get<uint8_t>(7), uint8_t(g_GameDir_snd.length()));
 			}
 			PatchCodeRefsToData("42 49 4F 34 5C 73 6E 64 5C 62 69 6F 34 5F 70 72 6F 6A 65 63 74 2E 78 67 73 00", 2, &g_GameDir_snd_bio4_project);
@@ -439,10 +439,10 @@ void re4t::init::CommandLine()
 			// These four are referenced via some kind of pointer array instead of via code, need to search for & patch it
 			// Order is bio4bgm.xwb / bio4bgm.xsb / bio4evt.xwb / bio4evt.xsb
 			uint32_t addrs[4];
-			addrs[0] = (uint32_t)hook::pattern("42 49 4F 34 5C 73 6E 64 5C 62 69 6F 34 62 67 6D 2E 78 77 62 00").count(1).get(0).get<uint8_t>(0);
-			addrs[1] = (uint32_t)hook::pattern("42 49 4F 34 5C 73 6E 64 5C 62 69 6F 34 62 67 6D 2E 78 73 62 00").count(1).get(0).get<uint8_t>(0);
-			addrs[2] = (uint32_t)hook::pattern("42 49 4F 34 5C 73 6E 64 5C 62 69 6F 34 65 76 74 2E 78 77 62 00").count(1).get(0).get<uint8_t>(0);
-			addrs[3] = (uint32_t)hook::pattern("42 49 4F 34 5C 73 6E 64 5C 62 69 6F 34 65 76 74 2E 78 73 62 00").count(1).get(0).get<uint8_t>(0);
+			addrs[0] = (uint32_t)re4t::pattern("42 49 4F 34 5C 73 6E 64 5C 62 69 6F 34 62 67 6D 2E 78 77 62 00").count(1).get(0).get<uint8_t>(0);
+			addrs[1] = (uint32_t)re4t::pattern("42 49 4F 34 5C 73 6E 64 5C 62 69 6F 34 62 67 6D 2E 78 73 62 00").count(1).get(0).get<uint8_t>(0);
+			addrs[2] = (uint32_t)re4t::pattern("42 49 4F 34 5C 73 6E 64 5C 62 69 6F 34 65 76 74 2E 78 77 62 00").count(1).get(0).get<uint8_t>(0);
+			addrs[3] = (uint32_t)re4t::pattern("42 49 4F 34 5C 73 6E 64 5C 62 69 6F 34 65 76 74 2E 78 73 62 00").count(1).get(0).get<uint8_t>(0);
 
 			uint8_t* addr_bytes = (uint8_t*)addrs;
 			char searchStr[256];
@@ -452,7 +452,7 @@ void re4t::init::CommandLine()
 				addr_bytes[8], addr_bytes[9], addr_bytes[10], addr_bytes[11],
 				addr_bytes[12], addr_bytes[13], addr_bytes[14], addr_bytes[15]);
 
-			auto pattern = hook::pattern(searchStr);
+			auto pattern = re4t::pattern(searchStr);
 			uint32_t* ptrs = pattern.count(1).get(0).get<uint32_t>(0);
 			Patch(&ptrs[0], g_GameDir_snd_bio4bgm_xwb.c_str());
 			Patch(&ptrs[1], g_GameDir_snd_bio4bgm_xsb.c_str());
@@ -462,7 +462,7 @@ void re4t::init::CommandLine()
 	}
 
 	// Hook titleMain so we can areaJump once title screen starts running it
-	auto pattern = hook::pattern("0F BE 06 8B 0C 85 ? ? ? ? 56 FF D1 6A 01 E8");
+	auto pattern = re4t::pattern("0F BE 06 8B 0C 85 ? ? ? ? 56 FF D1 6A 01 E8");
 	uint32_t* titleFuncTbl = *pattern.count(1).get(0).get<uint32_t*>(6);
 	uint32_t* titleMain_ptr = &titleFuncTbl[int(TITLE_WORK::Routine0::Main)];
 	titleMain = (decltype(titleMain))*titleMain_ptr;
@@ -471,7 +471,7 @@ void re4t::init::CommandLine()
 	// cCard::dataSelect hook so we can make it load directly into the save
 	if (paramLoadSaveSlot > 0)
 	{
-		pattern = hook::pattern("0F B6 46 04 8D 14 47");
+		pattern = re4t::pattern("0F B6 46 04 8D 14 47");
 		cCard_MainLoop_tbl* cCardLoopTbl = *pattern.count(1).get(0).get<cCard_MainLoop_tbl*>(0xC);
 		cCard_MainLoop_tbl* dataSelect_ptr = &cCardLoopTbl[int(cCard::Routine0::DataSelect)];
 		cCard__dataSelect = dataSelect_ptr->load_0;

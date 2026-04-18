@@ -478,11 +478,11 @@ void re4t::init::MathReimpl()
 
 		// VECAdd
 		{
-			auto pattern = hook::pattern("A1 ? ? ? ? 8D 4D ? 51 8B D1 52 05 94 00 00 00 50 E8");
+			auto pattern = re4t::pattern("A1 ? ? ? ? 8D 4D ? 51 8B D1 52 05 94 00 00 00 50 E8");
 			auto caller = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(0x12)).as_int();
 			ReadCall(caller, PSVECAdd);
 			// alternate version
-			pattern = hook::pattern("56 8D 55 ? 52 56 E8 ? ? ? ? 8B 4D ? 83 C4 ? 5F");
+			pattern = re4t::pattern("56 8D 55 ? 52 56 E8 ? ? ? ? 8B 4D ? 83 C4 ? 5F");
 			auto caller_0 = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(6)).as_int();
 
 			InjectHook(caller, VECAdd, HookType::Jump);
@@ -491,11 +491,11 @@ void re4t::init::MathReimpl()
 
 		// VECSubtract
 		{
-			auto pattern = hook::pattern("51 8D 55 ? 52 E8 ? ? ? ? D9 45 ? D8 65 ?");
+			auto pattern = re4t::pattern("51 8D 55 ? 52 E8 ? ? ? ? D9 45 ? D8 65 ?");
 			auto caller = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(5)).as_int();
 			ReadCall(caller, PSVECSubtract);
 			// alternate version
-			pattern = hook::pattern("8D 0C 40 8D 14 8B 57 52 E8 ? ? ? ? 8D 45");
+			pattern = re4t::pattern("8D 0C 40 8D 14 8B 57 52 E8 ? ? ? ? 8D 45");
 			auto caller_0 = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(8)).as_int();
 
 			InjectHook(caller, VECSubtract, HookType::Jump);
@@ -504,11 +504,11 @@ void re4t::init::MathReimpl()
 
 		// VECScale
 		{
-			auto pattern = hook::pattern("83 C4 08 8D 55 ? D9 1C ? 52 8B C2 50 E8");
+			auto pattern = re4t::pattern("83 C4 08 8D 55 ? D9 1C ? 52 8B C2 50 E8");
 			auto caller = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(0xD)).as_int();
 			ReadCall(caller, PSVECScale);
 			// alternate version
-			pattern = hook::pattern("8B 7D ? 51 8D 4D ? D9 1C ? 51 50 E8");
+			pattern = re4t::pattern("8B 7D ? 51 8D 4D ? D9 1C ? 51 50 E8");
 			auto caller_0 = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(0xC)).as_int();
 
 			InjectHook(caller, VECScale, HookType::Jump);
@@ -517,7 +517,7 @@ void re4t::init::MathReimpl()
 
 		// VECNormalize
 		{
-			auto pattern = hook::pattern("8D 45 ? 50 8D 4D ? 51 E8 ? ? ? ? D9 45 ? D9 45 ? 83 C4 04 D9 45 ?");
+			auto pattern = re4t::pattern("8D 45 ? 50 8D 4D ? 51 E8 ? ? ? ? D9 45 ? D9 45 ? 83 C4 04 D9 45 ?");
 			auto caller = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(8)).as_int();
 			ReadCall(caller, PSVECNormalize);
 
@@ -529,11 +529,11 @@ void re4t::init::MathReimpl()
 
 		// VECDotProduct
 		{
-			auto pattern = hook::pattern("8B B5 ? ? ? ? 8D 4D ? 56 51 E8 ? ? ? ? D9 9D ? ? ? ? D9 85");
+			auto pattern = re4t::pattern("8B B5 ? ? ? ? 8D 4D ? 56 51 E8 ? ? ? ? D9 9D ? ? ? ? D9 85");
 			auto caller = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(0xB)).as_int();
 			ReadCall(caller, PSVECDotProduct);
 			// alternate version
-			pattern = hook::pattern("8D 55 ? 52 8D 45 ? 50 E8 ? ? ? ? D8 1D");
+			pattern = re4t::pattern("8D 55 ? 52 8D 45 ? 50 E8 ? ? ? ? D8 1D");
 			auto caller_0 = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(8)).as_int();
 
 			InjectHook(caller, VECDotProduct, HookType::Jump);
@@ -542,11 +542,11 @@ void re4t::init::MathReimpl()
 
 		// VECCrossProduct
 		{
-			auto pattern = hook::pattern("DD D9 8D 45 ? DD D8 56 50 E8");
+			auto pattern = re4t::pattern("DD D9 8D 45 ? DD D8 56 50 E8");
 			auto caller = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(9)).as_int();
 			ReadCall(caller, PSVECCrossProduct);
 			// alternate version
-			pattern = hook::pattern("8D 55 ? 52 8D 45 ? 50 8D 4D ? 51 E8 ? ? ? ? 8D 55 ? 52 8D 45 ? 50 E8");
+			pattern = re4t::pattern("8D 55 ? 52 8D 45 ? 50 8D 4D ? 51 E8 ? ? ? ? 8D 55 ? 52 8D 45 ? 50 E8");
 			auto caller_0 = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(0xC)).as_int();
 
 			if (sse1)
@@ -567,11 +567,11 @@ void re4t::init::MathReimpl()
 
 		// VECSquareDistance
 		{
-			auto pattern = hook::pattern("51 8D 95 ? ? ? ? 52 DD 9D ? ? ? ? E8");
+			auto pattern = re4t::pattern("51 8D 95 ? ? ? ? 52 DD 9D ? ? ? ? E8");
 			auto caller = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(0xE)).as_int();
 			ReadCall(caller, PSVECSquareDistance);
 			// alternate version
-			pattern = hook::pattern("D9 45 ? 8B 55 ? DD 5D ? 8D 4D ? 51 52 E8");
+			pattern = re4t::pattern("D9 45 ? 8B 55 ? DD 5D ? 8D 4D ? 51 52 E8");
 			auto caller_0 = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(0xE)).as_int();
 
 			InjectHook(caller, VECSquareDistance, HookType::Jump);
@@ -580,12 +580,12 @@ void re4t::init::MathReimpl()
 
 		// GetDistance (VECSquareDistance with reversed params...)
 		{
-			auto pattern = hook::pattern("D9 5D ? 8B 18 8D 45 ? 50 E8 ? ? ? ? 0F AF DB");
+			auto pattern = re4t::pattern("D9 5D ? 8B 18 8D 45 ? 50 E8 ? ? ? ? 0F AF DB");
 			auto caller = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(0x9)).as_int();
 			ReadCall(caller, GetDistance);
 
 			// alternate version
-			pattern = hook::pattern("D9 5D ? D9 5D ? D9 5D ? D9 5D ? E8 ? ? ? ? D9 45 ? 83 C4 08");
+			pattern = re4t::pattern("D9 5D ? D9 5D ? D9 5D ? D9 5D ? E8 ? ? ? ? D9 45 ? 83 C4 08");
 			auto caller_0 = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(0xC)).as_int();
 
 			InjectHook(caller, GetDistance_new, HookType::Jump);
@@ -594,11 +594,11 @@ void re4t::init::MathReimpl()
 
 		// VECSquareMag
 		{
-			auto pattern = hook::pattern("E8 ? ? ? ? D9 9D ? ? ? ? 8D 45 ? 83 C4 40 50 E8");
+			auto pattern = re4t::pattern("E8 ? ? ? ? D9 9D ? ? ? ? 8D 45 ? 83 C4 40 50 E8");
 			auto caller = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(0x12)).as_int();
 			ReadCall(caller, PSVECSquareMag);
 			// alt ver
-			pattern = hook::pattern("E8 ? ? ? ? 8D 45 ? 50 E8 ? ? ? ? D9 5D ? 8D 4D ? 51 8D 55");
+			pattern = re4t::pattern("E8 ? ? ? ? 8D 45 ? 50 E8 ? ? ? ? D9 5D ? 8D 4D ? 51 8D 55");
 			auto caller_0 = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(9)).as_int();
 
 			InjectHook(caller, VECSquareMag, HookType::Jump);
@@ -607,7 +607,7 @@ void re4t::init::MathReimpl()
 
 		// VECDistance
 		{
-			auto pattern = hook::pattern("8D 55 ? 52 8D 85 ? ? ? ? 50 E8 ? ? ? ? DD 5D ? 8D 4D ?");
+			auto pattern = re4t::pattern("8D 55 ? 52 8D 85 ? ? ? ? 50 E8 ? ? ? ? DD 5D ? 8D 4D ?");
 			auto caller = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(0xB)).as_int();
 			ReadCall(caller, PSVECDistance);
 
@@ -619,7 +619,7 @@ void re4t::init::MathReimpl()
 
 		// GetDistance3 (VECDistance with reversed params...)
 		{
-			auto pattern = hook::pattern("81 C1 94 00 00 00 51 8D 96 ? ? ? ? 52 E8 ? ? ? ? DC 25");
+			auto pattern = re4t::pattern("81 C1 94 00 00 00 51 8D 96 ? ? ? ? 52 E8 ? ? ? ? DC 25");
 			auto caller = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(0xE)).as_int();
 			ReadCall(caller, GetDistance3);
 
@@ -631,7 +631,7 @@ void re4t::init::MathReimpl()
 
 		// MTXMultVec
 		{
-			auto pattern = hook::pattern("DD D8 51 8D 55 ? 52 8D 7E ? 57 E8 ? ? ? ? 8D 45");
+			auto pattern = re4t::pattern("DD D8 51 8D 55 ? 52 8D 7E ? 57 E8 ? ? ? ? 8D 45");
 			auto caller = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(0xB)).as_int();
 			ReadCall(caller, PSMTXMultVec);
 
@@ -640,7 +640,7 @@ void re4t::init::MathReimpl()
 
 		// MTXMultVecSR
 		{
-			auto pattern = hook::pattern("D9 96 54 07 00 00 D9 5D ? D9 55 ? D9 5D ? E8");
+			auto pattern = re4t::pattern("D9 96 54 07 00 00 D9 5D ? D9 55 ? D9 5D ? E8");
 			auto caller = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(0xF)).as_int();
 			ReadCall(caller, PSMTXMultVecSR);
 
@@ -649,7 +649,7 @@ void re4t::init::MathReimpl()
 
 		// SQRTF - replacing this seems to fix the low-fps r104s00 cutscene issue?
 		{
-			auto pattern = hook::pattern("D9 46 ? DD 5D ? D9 1C ? E8 ? ? ? ? DC 6D ? 83 C4 04");
+			auto pattern = re4t::pattern("D9 46 ? DD 5D ? D9 1C ? E8 ? ? ? ? DC 6D ? 83 C4 04");
 			auto caller = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(9)).as_int();
 			ReadCall(caller, SQRTF);
 			if (sse1)
@@ -658,7 +658,7 @@ void re4t::init::MathReimpl()
 
 		// MTXConcat
 		{
-			auto pattern = hook::pattern("8D 47 3C 50 8D 55 ? 52 50 E8 ? ? ? ? 83 C4 18");
+			auto pattern = re4t::pattern("8D 47 3C 50 8D 55 ? 52 50 E8 ? ? ? ? 83 C4 18");
 			auto caller = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(9)).as_int();
 			ReadCall(caller, PSMTXConcat);
 			if (sse1)
@@ -667,7 +667,7 @@ void re4t::init::MathReimpl()
 
 		// MTXTranspose
 		{
-			auto pattern = hook::pattern("8D 45 ? 50 8D 4D ? 51 E8 ? ? ? ? 83 C4 40 8D 55");
+			auto pattern = re4t::pattern("8D 45 ? 50 8D 4D ? 51 E8 ? ? ? ? 83 C4 40 8D 55");
 			auto caller = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(8)).as_int();
 			ReadCall(caller, PSMTXTranspose);
 			if (sse1)
@@ -676,7 +676,7 @@ void re4t::init::MathReimpl()
 
 		// MTXScale
 		{
-			auto pattern = hook::pattern("D9 5C 24 ? D9 46 0C D9 1C ? 52 E8 ? ? ? ? 8D 45");
+			auto pattern = re4t::pattern("D9 5C 24 ? D9 46 0C D9 1C ? 52 E8 ? ? ? ? 8D 45");
 			auto caller = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(0xB)).as_int();
 			ReadCall(caller, PSMTXScale);
 			if (sse1)
@@ -685,7 +685,7 @@ void re4t::init::MathReimpl()
 
 		// MTXScaleApply
 		{
-			auto pattern = hook::pattern("D9 00 8B 45 ? D9 1C ? 50 50 E8 ? ? ? ? 83 C4 14");
+			auto pattern = re4t::pattern("D9 00 8B 45 ? D9 1C ? 50 50 E8 ? ? ? ? 83 C4 14");
 			auto caller = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(0xA)).as_int();
 			ReadCall(caller, PSMTXScaleApply);
 			if (sse1)
@@ -696,11 +696,11 @@ void re4t::init::MathReimpl()
 
 		// MTXIdentity
 		{
-			auto pattern = hook::pattern("38 86 FD 00 00 00 75 ? 8D 45 ? 50 E8 ? ? ? ? D9 E8");
+			auto pattern = re4t::pattern("38 86 FD 00 00 00 75 ? 8D 45 ? 50 E8 ? ? ? ? D9 E8");
 			auto caller = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(0xC)).as_int();
 			ReadCall(caller, PSMTXIdentity);
 			// alt ver
-			pattern = hook::pattern("8D 45 ? 50 E8 ? ? ? ? 8D 8E A0 00 00 00 51 8D 55");
+			pattern = re4t::pattern("8D 45 ? 50 E8 ? ? ? ? 8D 8E A0 00 00 00 51 8D 55");
 			auto caller_0 = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(4)).as_int();
 
 			if (sse1)
@@ -712,7 +712,7 @@ void re4t::init::MathReimpl()
 
 		// MTXRotTrig
 		{
-			auto pattern = hook::pattern("51 8B 4D ? D9 1C ? 50 51 E8 ? ? ? ? 83 C4 10");
+			auto pattern = re4t::pattern("51 8B 4D ? D9 1C ? 50 51 E8 ? ? ? ? 83 C4 10");
 			auto caller = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(9)).as_int();
 			ReadCall(caller, PSMTXRotTrig);
 			if (sse1)
@@ -721,7 +721,7 @@ void re4t::init::MathReimpl()
 
 		// MTXRotRad
 		{
-			auto pattern = hook::pattern("6A 79 51 E8 ? ? ? ? 8D 55");
+			auto pattern = re4t::pattern("6A 79 51 E8 ? ? ? ? 8D 55");
 			auto caller = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(3)).as_int();
 			ReadCall(caller, PSMTXRotRad);
 			if (sse1)
@@ -730,7 +730,7 @@ void re4t::init::MathReimpl()
 
 		// MTXRotAxisRad
 		{
-			auto pattern = hook::pattern("83 C4 08 8D 4D ? D9 1C ? 51 8D 55 ? 52 E8 ? ? ? ?");
+			auto pattern = re4t::pattern("83 C4 08 8D 4D ? D9 1C ? 51 8D 55 ? 52 E8 ? ? ? ?");
 			auto caller = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(0xE)).as_int();
 			ReadCall(caller, PSMTXRotAxisRad);
 			if (sse1) // calls into VECNormalize_SSE1
@@ -739,7 +739,7 @@ void re4t::init::MathReimpl()
 
 		// MTXCopy
 		{
-			auto pattern = hook::pattern("50 8D 4E 0C 51 E8 ? ? ? ? 83 C7 70");
+			auto pattern = re4t::pattern("50 8D 4E 0C 51 E8 ? ? ? ? 83 C7 70");
 			auto caller = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(5)).as_int();
 			ReadCall(caller, PSMTXCopy);
 			if (sse1)

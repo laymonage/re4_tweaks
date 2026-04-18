@@ -97,16 +97,16 @@ void re4t::init::QTEfixes()
 	// Automatic QTEs
 	{
 		// QTEactive pointer
-		auto pattern = hook::pattern("C6 05 ? ? ? ? ? E8 ? ? ? ? 83 C4 ? 84 C0 0F 84");
+		auto pattern = re4t::pattern("C6 05 ? ? ? ? ? E8 ? ? ? ? 83 C4 ? 84 C0 0F 84");
 		ptrQTEactive = *pattern.count(1).get(0).get<uint32_t*>(2);
 
 		// Hook cActionButton_checkButton
-		pattern = hook::pattern("E8 ? ? ? ? 3C ? 0F 85 ? ? ? ? 8B 4E");
+		pattern = re4t::pattern("E8 ? ? ? ? 3C ? 0F 85 ? ? ? ? 8B 4E");
 		ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), cActionButton_checkButton_orig);
 		InjectHook(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), cActionButton_checkButton_hook);
 
 		// Hook cActionButton::move to hide the prompts if the QTE is automatic
-		pattern = hook::pattern("F7 40 ? ? ? ? ? 75 ? F6 46");
+		pattern = re4t::pattern("F7 40 ? ? ? ? ? 75 ? F6 46");
 		struct ActionButtonPrompt
 		{
 			void operator()(injector::reg_pack& regs)
@@ -125,7 +125,7 @@ void re4t::init::QTEfixes()
 
 		// Running from boulders
 		{
-			auto pattern = hook::pattern("E8 ? ? ? ? 83 C4 10 85 C0 74 4F");
+			auto pattern = re4t::pattern("E8 ? ? ? ? 83 C4 10 85 C0 74 4F");
 			ReadCall(pattern.count(1).get(0).get<uint32_t>(0), KeyTrgCheck_orig);
 			InjectHook(pattern.count(1).get(0).get<uint32_t>(0), KeyTrgCheck_hook);
 		}
@@ -133,45 +133,45 @@ void re4t::init::QTEfixes()
 		// Del Lago
 		{
 			// Swimming back to the boat
-			auto pattern = hook::pattern("E8 ? ? ? ? 83 C4 ? 85 C0 74 ? A1 ? ? ? ? 66 83 B8 ? ? ? ? ? 7F ? D9 86");
+			auto pattern = re4t::pattern("E8 ? ? ? ? 83 C4 ? 85 C0 74 ? A1 ? ? ? ? 66 83 B8 ? ? ? ? ? 7F ? D9 86");
 			InjectHook(pattern.count(1).get(0).get<uint32_t>(0), KeyTrgCheck_hook);
 
 			// Cutting the rope
-			pattern = hook::pattern("E8 ? ? ? ? 83 C4 10 85 C0 74 06 FF 86 ? ? ? ? 5E");
+			pattern = re4t::pattern("E8 ? ? ? ? 83 C4 10 85 C0 74 06 FF 86 ? ? ? ? 5E");
 			InjectHook(pattern.count(1).get(0).get<uint32_t>(0), KeyTrgCheck_hook);
 		}
 
 		// Knifing El Gigante's parasite
 		{
 			// First
-			auto pattern = hook::pattern("E8 ? ? ? ? 83 C4 10 85 C0 74 06 FF 86 ? ? ? ? 0F B6 96 ? ? ? ?");
+			auto pattern = re4t::pattern("E8 ? ? ? ? 83 C4 10 85 C0 74 06 FF 86 ? ? ? ? 0F B6 96 ? ? ? ?");
 			InjectHook(pattern.count(1).get(0).get<uint32_t>(0), KeyTrgCheck_hook);
 
 			// Second
-			pattern = hook::pattern("E8 ? ? ? ? 83 C4 10 85 C0 74 06 FF 86 ? ? ? ? 57");
+			pattern = re4t::pattern("E8 ? ? ? ? 83 C4 10 85 C0 74 06 FF 86 ? ? ? ? 57");
 			InjectHook(pattern.count(1).get(0).get<uint32_t>(0), KeyTrgCheck_hook);
 
 			// Third
-			pattern = hook::pattern("E8 ? ? ? ? 83 C4 ? 85 C0 74 ? 8B 15 ? ? ? ? 8A 82");
+			pattern = re4t::pattern("E8 ? ? ? ? 83 C4 ? 85 C0 74 ? 8B 15 ? ? ? ? 8A 82");
 			InjectHook(pattern.count(1).get(0).get<uint32_t>(0), KeyTrgCheck_hook);
 		}
 
 		// Climbing up after the minecart ride
 		{
-			auto pattern = hook::pattern("E8 ? ? ? ? 83 C4 10 85 C0 74 24 D9 EE");
+			auto pattern = re4t::pattern("E8 ? ? ? ? 83 C4 10 85 C0 74 24 D9 EE");
 			InjectHook(pattern.count(1).get(0).get<uint32_t>(0), KeyTrgCheck_hook);
 		}
 
 		// Running from Salazar's statue
 		{
 			// Mashing
-			auto pattern = hook::pattern("E8 ? ? ? ? 83 C4 10 85 C0 74 1D 8B 7D 14");
+			auto pattern = re4t::pattern("E8 ? ? ? ? 83 C4 10 85 C0 74 1D 8B 7D 14");
 			InjectHook(pattern.count(1).get(0).get<uint32_t>(0), KeyTrgCheck_hook);
 
 			// Quick reaction
 			{
 				// Key.leftTrigger_A
-				auto pattern = hook::pattern("80 3D ? ? ? ? ? 0F 84 ? ? ? ? A1 ? ? ? ? 81 A0");
+				auto pattern = re4t::pattern("80 3D ? ? ? ? ? 0F 84 ? ? ? ? A1 ? ? ? ? 81 A0");
 				ptrleftTrigger_A = *pattern.count(1).get(0).get<uint32_t*>(2);
 				struct StatueRunTrigger_A
 				{
@@ -212,7 +212,7 @@ void re4t::init::QTEfixes()
 				}; injector::MakeInline<StatueRunTrigger_A>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(7));
 				
 				// Key.rightTrigger_B
-				pattern = hook::pattern("80 3D ? ? ? ? 00 EB ? 6A 0E 6A ? 6A ? 6A ? 6A ? 6A");
+				pattern = re4t::pattern("80 3D ? ? ? ? 00 EB ? 6A 0E 6A ? 6A ? 6A ? 6A ? 6A");
 				ptrrightTrigger_B = *pattern.count(1).get(0).get<uint32_t*>(2);
 				struct StatueRunTrigger_B
 				{
@@ -253,32 +253,32 @@ void re4t::init::QTEfixes()
 				}; injector::MakeInline<StatueRunTrigger_B>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(7));
 				
 				// Both keys
-				pattern = hook::pattern("E8 ? ? ? ? 85 C0 EB ? 6A ? 6A ? 6A ? 6A ? 6A");
+				pattern = re4t::pattern("E8 ? ? ? ? 85 C0 EB ? 6A ? 6A ? 6A ? 6A ? 6A");
 				ReadCall(pattern.count(1).get(0).get<uint32_t>(0), sub_859810_orig);
 				InjectHook(pattern.count(1).get(0).get<uint32_t>(0), sub_859810_hook);
 			
-				pattern = hook::pattern("E8 ? ? ? ? 85 C0 0F 84 ? ? ? ? 6A ? 6A ? 6A ? 8D 8E");
+				pattern = re4t::pattern("E8 ? ? ? ? 85 C0 0F 84 ? ? ? ? 6A ? 6A ? 6A ? 8D 8E");
 				InjectHook(pattern.count(1).get(0).get<uint32_t>(0), sub_859810_hook);
 			}
 		}
 
 		// Climbing up after running from Salazar's statue
 		{
-			auto pattern = hook::pattern("E8 ? ? ? ? 83 C4 ? 85 C0 74 ? A1 ? ? ? ? ? ? ? ? ? ? 6A ? 6A ? 6A ? 6A ? 6A ? 6A ? 6A ? 6A ? 6A ? B9");
+			auto pattern = re4t::pattern("E8 ? ? ? ? 83 C4 ? 85 C0 74 ? A1 ? ? ? ? ? ? ? ? ? ? 6A ? 6A ? 6A ? 6A ? 6A ? 6A ? 6A ? 6A ? 6A ? B9");
 			InjectHook(pattern.count(4).get(2).get<uint32_t>(0), KeyTrgCheck_hook);
 			InjectHook(pattern.count(4).get(3).get<uint32_t>(0), KeyTrgCheck_hook);
 		}
 
 		// Last QTE from the Krauser knife fight
 		{
-			auto pattern = hook::pattern("83 FF ? 75 ? 68 ? ? ? ? E8 ? ? ? ? 83 C4 ? 85 C0");
+			auto pattern = re4t::pattern("83 FF ? 75 ? 68 ? ? ? ? E8 ? ? ? ? 83 C4 ? 85 C0");
 			InjectHook(pattern.count(1).get(0).get<uint32_t>(10), KeyTrgCheck_hook);
 		}
 
 		// Lasers after Krauser
 		{
 			// Key.leftTrigger_A
-			auto pattern = hook::pattern("80 3D ? ? ? ? ? 74 ? 66 C7 05 ? ? ? ? ? ? A1 ? ? ? ? 81 88 ? ? ? ? ? ? ? ? 68");
+			auto pattern = re4t::pattern("80 3D ? ? ? ? ? 74 ? 66 C7 05 ? ? ? ? ? ? A1 ? ? ? ? 81 88 ? ? ? ? ? ? ? ? 68");
 			struct LaserTrigger_A
 			{
 				void operator()(injector::reg_pack& regs)
@@ -317,11 +317,11 @@ void re4t::init::QTEfixes()
 				}
 			}; injector::MakeInline<LaserTrigger_A>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(7));
 
-			pattern = hook::pattern("80 3D ? ? ? ? ? 74 ? 66 C7 05 ? ? ? ? ? ? A1 ? ? ? ? 81 88 ? ? ? ? ? ? ? ? 8B C7");
+			pattern = re4t::pattern("80 3D ? ? ? ? ? 74 ? 66 C7 05 ? ? ? ? ? ? A1 ? ? ? ? 81 88 ? ? ? ? ? ? ? ? 8B C7");
 			injector::MakeInline<LaserTrigger_A>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(7));
 
 			// Key.rightTrigger_B
-			pattern = hook::pattern("80 3D ? ? ? ? ? 74 ? ? ? ? ? ? ? ? 74 ? 66 C7 05 ? ? ? ? ? ? A1 ? ? ? ? 81 88 ? ? ? ? ? ? ? ? 68");
+			pattern = re4t::pattern("80 3D ? ? ? ? ? 74 ? ? ? ? ? ? ? ? 74 ? 66 C7 05 ? ? ? ? ? ? A1 ? ? ? ? 81 88 ? ? ? ? ? ? ? ? 68");
 			struct LaserTrigger_B
 			{
 				void operator()(injector::reg_pack& regs)
@@ -360,18 +360,18 @@ void re4t::init::QTEfixes()
 				}
 			}; injector::MakeInline<LaserTrigger_B>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(7));
 			
-			pattern = hook::pattern("80 3D ? ? ? ? ? 74 ? ? ? ? ? ? ? ? 74 ? 66 C7 05 ? ? ? ? ? ? A1 ? ? ? ? 81 88 ? ? ? ? ? ? ? ? 8B C7");
+			pattern = re4t::pattern("80 3D ? ? ? ? ? 74 ? ? ? ? ? ? ? ? 74 ? 66 C7 05 ? ? ? ? ? ? A1 ? ? ? ? 81 88 ? ? ? ? ? ? ? ? 8B C7");
 			injector::MakeInline<LaserTrigger_B>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(7));
 		
 			// Last QTE
-			pattern = hook::pattern("E8 ? ? ? ? 85 C0 74 ? FE 86 ? ? ? ? 5F 5E");
+			pattern = re4t::pattern("E8 ? ? ? ? 85 C0 74 ? FE 86 ? ? ? ? 5F 5E");
 			ReadCall(pattern.count(1).get(0).get<uint32_t>(0), sub_8064B0_orig);
 			InjectHook(pattern.count(1).get(0).get<uint32_t>(0), sub_8064B0_hook);
 		}
 
 		// Bridges during Saddler's final fight
 		{
-			auto pattern = hook::pattern("D9 9C C6 ? ? ? ? E9 ? ? ? ? 68 ? ? ? ? 6A ? E8");
+			auto pattern = re4t::pattern("D9 9C C6 ? ? ? ? E9 ? ? ? ? 68 ? ? ? ? 6A ? E8");
 			struct SaddlerBridge
 			{
 				void operator()(injector::reg_pack& regs)
@@ -401,7 +401,7 @@ void re4t::init::QTEfixes()
 	{
 		// Running from boulders
 		{
-			auto pattern = hook::pattern("D9 87 ? ? ? ? D8 87 ? ? ? ? D9 9F ? ? ? ? D9 EE");
+			auto pattern = re4t::pattern("D9 87 ? ? ? ? D8 87 ? ? ? ? D9 9F ? ? ? ? D9 EE");
 			struct BouldersQTE
 			{
 				void operator()(injector::reg_pack& regs)
@@ -418,7 +418,7 @@ void re4t::init::QTEfixes()
 
 		// Climbing up after the minecart ride
 		{
-			auto pattern = hook::pattern("D9 86 ? ? ? ? 8B 0D ? ? ? ? D8 61 ? D9 9E ? ? ? ? 6A");
+			auto pattern = re4t::pattern("D9 86 ? ? ? ? 8B 0D ? ? ? ? D8 61 ? D9 9E ? ? ? ? 6A");
 			struct MinecartQTE
 			{
 				void operator()(injector::reg_pack& regs)
@@ -435,7 +435,7 @@ void re4t::init::QTEfixes()
 
 		// Running from Salazar's statue
 		{
-			auto pattern = hook::pattern("8B 7D ? D9 07 E8 ? ? ? ? 0F AF 5D 24 D9 EE 01 06");
+			auto pattern = re4t::pattern("8B 7D ? D9 07 E8 ? ? ? ? 0F AF 5D 24 D9 EE 01 06");
 			struct StatueRunQTE
 			{
 				void operator()(injector::reg_pack& regs)
@@ -454,7 +454,7 @@ void re4t::init::QTEfixes()
 
 		// Climbing up after running from Salazar's statue
 		{
-			auto pattern = hook::pattern("FF 80 ? ? ? ? 6A ? 6A ? 6A ? 6A ? 6A ? 6A ? 6A ? 6A ? 6A ? B9");
+			auto pattern = re4t::pattern("FF 80 ? ? ? ? 6A ? 6A ? 6A ? 6A ? 6A ? 6A ? 6A ? 6A ? 6A ? B9");
 			struct StatueClimbQTE
 			{
 				void operator()(injector::reg_pack& regs)
@@ -471,7 +471,7 @@ void re4t::init::QTEfixes()
 
 		// Last QTE from the Krauser knife fight
 		{
-			auto pattern = hook::pattern("A1 ? ? ? ? 74 ? FF 00 39 30 0F 8C ? ? ? ? A1 ? ? ? ? 81 A0");
+			auto pattern = re4t::pattern("A1 ? ? ? ? 74 ? FF 00 39 30 0F 8C ? ? ? ? A1 ? ? ? ? 81 A0");
 			ptrKrauserQTEMovAddr = *pattern.count(1).get(0).get<uint32_t*>(1);
 			struct KrauserQTE
 			{
@@ -491,7 +491,7 @@ void re4t::init::QTEfixes()
 				}
 			}; injector::MakeInline<KrauserQTE>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5));
 
-			pattern = hook::pattern("FF 00 39 30 0F 8C ? ? ? ? A1 ? ? ? ? 81 A0");
+			pattern = re4t::pattern("FF 00 39 30 0F 8C ? ? ? ? A1 ? ? ? ? 81 A0");
 			injector::MakeNOP(pattern.count(1).get(0).get<uint32_t>(0), 2, true);
 		}
 
@@ -503,7 +503,7 @@ void re4t::init::QTEfixes()
 	{
 		// KEY_1 binding hook
 		{
-			auto pattern = hook::pattern("8B 58 ? 8B 40 ? 8D 8D ? ? ? ? 51");
+			auto pattern = re4t::pattern("8B 58 ? 8B 40 ? 8D 8D ? ? ? ? 51");
 			struct QTEkey1
 			{
 				void operator()(injector::reg_pack& regs)
@@ -516,7 +516,7 @@ void re4t::init::QTEfixes()
 
 		// KEY_2 binding hook
 		{
-			auto pattern = hook::pattern("8B 50 ? 8B 40 ? 8B F3 0B F1 74 ?");
+			auto pattern = re4t::pattern("8B 50 ? 8B 40 ? 8B F3 0B F1 74 ?");
 			struct QTEkey2
 			{
 				void operator()(injector::reg_pack& regs)
@@ -528,14 +528,14 @@ void re4t::init::QTEfixes()
 		}
 
 		// KEY_1 icon prompts
-		auto pattern = hook::pattern("8D ? ? ? ? ? 6A 2D ? E8");
+		auto pattern = re4t::pattern("8D ? ? ? ? ? 6A 2D ? E8");
 		ReadCall(pattern.count(3).get(0).get<uint32_t>(9), sub_41E600_orig);
 		InjectHook(pattern.count(3).get(0).get<uint32_t>(9), KEY1prompt_hook);
 		InjectHook(pattern.count(3).get(1).get<uint32_t>(9), KEY1prompt_hook);
 		InjectHook(pattern.count(3).get(2).get<uint32_t>(9), KEY1prompt_hook);
 
 		// KEY_2 icon prompts
-		pattern = hook::pattern("8D ? ? ? ? ? 6A 2E ? E8");
+		pattern = re4t::pattern("8D ? ? ? ? ? 6A 2E ? E8");
 		InjectHook(pattern.count(4).get(0).get<uint32_t>(9), KEY2prompt_hook);
 		InjectHook(pattern.count(4).get(1).get<uint32_t>(9), KEY2prompt_hook);
 		InjectHook(pattern.count(4).get(2).get<uint32_t>(9), KEY2prompt_hook);

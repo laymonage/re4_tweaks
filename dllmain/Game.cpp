@@ -897,7 +897,7 @@ bool re4t::init::Game()
 	// Detect game version
 	{
 		// Try to get the version string that the game displays in the titleMenu
-		auto pattern = hook::pattern("68 ? ? ? ? 8B C8 E8 ? ? ? ? DC 2D ? ? ? ? A1 ? ? ? ? DC 25");
+		auto pattern = re4t::pattern("68 ? ? ? ? 8B C8 E8 ? ? ? ? DC 2D ? ? ? ? A1 ? ? ? ? DC 25");
 		if (!pattern.empty())
 		{
 			std::string titleMenu_ver = **pattern.count(1).get(0).get<char(*)[6]>(1);
@@ -919,21 +919,21 @@ bool re4t::init::Game()
 		}
 
 		// Check if setLanguage() exists. If not, this is a JP build
-		pattern = hook::pattern("8A ? 08 8B ? ? ? ? ? 88 ? ? ? ? ? C3 8B FF");
+		pattern = re4t::pattern("8A ? 08 8B ? ? ? ? ? 88 ? ? ? ? ? C3 8B FF");
 		if (pattern.empty())
 		{
 			gameVersion += "j";
 		}
 
 		// Check if the EXT_CMD_MERCENARIES case exists in titleExtraSelect. If not, this is a German build
-		pattern = hook::pattern("B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 8B 56 ? 8B C1 57 25");
+		pattern = re4t::pattern("B8 ? ? ? ? C3 B8 ? ? ? ? C3 B8 ? ? ? ? C3 8B 56 ? 8B C1 57 25");
 		if (pattern.empty())
 		{
 			gameVersion += "g";
 		}
 
 		// Check for part of gameDebug function, if exists this must be a debug-enabled build
-		pattern = hook::pattern("6A 00 6A 00 6A 08 68 AE 01 00 00 6A 10 6A 0A");
+		pattern = re4t::pattern("6A 00 6A 00 6A 08 68 AE 01 00 00 6A 10 6A 0A");
 		if (!pattern.empty())
 		{
 			gameVersion += "d";
@@ -946,11 +946,11 @@ bool re4t::init::Game()
 	}
 
 	// Pointer to users variableframerate setting value
-	auto pattern = hook::pattern("89 0D ? ? ? ? 0F 95 ? 88 15 ? ? ? ? D9 1D ? ? ? ? A3 ? ? ? ? DB 46 ? D9 1D ? ? ? ? 8B 4E ? 89 0D ? ? ? ? 8B 4D ? 5E");
+	auto pattern = re4t::pattern("89 0D ? ? ? ? 0F 95 ? 88 15 ? ? ? ? D9 1D ? ? ? ? A3 ? ? ? ? DB 46 ? D9 1D ? ? ? ? 8B 4E ? 89 0D ? ? ? ? 8B 4D ? 5E");
 	ptrGameVariableFrameRate = *pattern.count(1).get(0).get<uint32_t*>(2);
 
 	// Get pointer to QLOC's INIConfig
-	pattern = hook::pattern("8B 8D ? ? ? ? 51 E8 ? ? ? ? 83 7E");
+	pattern = re4t::pattern("8B 8D ? ? ? ? 51 E8 ? ? ? ? 83 7E");
 	struct INIConfig_get
 	{
 		void operator()(injector::reg_pack& regs)
@@ -963,122 +963,122 @@ bool re4t::init::Game()
 	}; injector::MakeInline<INIConfig_get>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 	
 	// LastUsedDevice pointer
-	pattern = hook::pattern("A1 ? ? ? ? 85 C0 74 ? 83 F8 ? 74 ? 81 F9");
+	pattern = re4t::pattern("A1 ? ? ? ? 85 C0 74 ? 83 F8 ? 74 ? 81 F9");
 	ptrLastUsedDevice = *pattern.count(1).get(0).get<uint32_t*>(1);
 
 	// g_MOUSE_SENS pointer
-	pattern = hook::pattern("0F B6 05 ? ? ? ? 89 85 ? ? ? ? DB 85 ? ? ? ? DC 35");
+	pattern = re4t::pattern("0F B6 05 ? ? ? ? 89 85 ? ? ? ? DB 85 ? ? ? ? DC 35");
 	ptrMouseSens = *pattern.count(1).get(0).get<uint32_t*>(3);
 
 	// Mouse aiming mode pointer
-	pattern = hook::pattern("80 3D ? ? ? ? ? 0F B6 05");
+	pattern = re4t::pattern("80 3D ? ? ? ? ? 0F B6 05");
 	ptrMouseAimMode = *pattern.count(1).get(0).get<uint32_t*>(2);
 
 	// Pointer to Key_btn_on
-	pattern = hook::pattern("A1 ? ? ? ? 33 C9 83 E0 ? 83 3D");
+	pattern = re4t::pattern("A1 ? ? ? ? 33 C9 83 E0 ? 83 3D");
 	ptrKey_btn_on = *pattern.count(1).get(0).get<uint32_t*>(1);
 
 	// Pointer to Key_btn_trg
-	pattern = hook::pattern("A1 ? ? ? ? 25 ? ? ? ? 0B C1 74 ? 88 0D");
+	pattern = re4t::pattern("A1 ? ? ? ? 25 ? ? ? ? 0B C1 74 ? 88 0D");
 	ptrKey_btn_trg = *pattern.count(1).get(0).get<uint32_t*>(1);
 
 	// Pointer to Joy[4] array
-	pattern = hook::pattern("83 E0 10 33 C9 0B C1 0F 84 ? ? ? ? 0F BE 05 ? ? ? ?");
+	pattern = re4t::pattern("83 E0 10 33 C9 0B C1 0F 84 ? ? ? ? 0F BE 05 ? ? ? ?");
 	Joy_ptr = (JOY*)(*pattern.count(1).get(0).get<uint8_t*>(0x10) - 9);
 
 	// Grab pointer to pG (pointer to games Global struct)
-	pattern = hook::pattern("A1 ? ? ? ? B9 FF FF FF 7F 21 48 ? A1");
+	pattern = re4t::pattern("A1 ? ? ? ? B9 FF FF FF 7F 21 48 ? A1");
 	pG_ptr = *pattern.count(1).get(0).get<GLOBAL_WK**>(1);
 
 	// pDamage pointer
-	pattern = hook::pattern("8A 8B C3 4F 00 00 89 45 0C");
+	pattern = re4t::pattern("8A 8B C3 4F 00 00 89 45 0C");
 	pD_ptr = *pattern.count(1).get(0).get<DAMAGE*>(-0xB);
 
 	// pSys pointer
-	pattern = hook::pattern("00 80 00 00 83 C4 ? E8 ? ? ? ? A1 ? ? ? ?");
+	pattern = re4t::pattern("00 80 00 00 83 C4 ? E8 ? ? ? ? A1 ? ? ? ?");
 	pSys_ptr = *pattern.count(1).get(0).get<SYSTEM_SAVE_WORK**>(13);
 
 	// pPL pointer
-	pattern = hook::pattern("A1 ? ? ? ? D8 CC D8 C9 D8 CA D9 5D ? D9 45 ?");
+	pattern = re4t::pattern("A1 ? ? ? ? D8 CC D8 C9 D8 CA D9 5D ? D9 45 ?");
 	pPL_ptr = *pattern.count(1).get(0).get<cPlayer**>(1);
 
 	// pAS pointer
-	pattern = hook::pattern("A8 02 74 16 8B 15");
+	pattern = re4t::pattern("A8 02 74 16 8B 15");
 	pAS_ptr = *pattern.count(1).get(0).get<cPlayer**>(6);
 
 	// Pointer to Snd_ctrl_work struct
-	pattern = hook::pattern("68 B8 00 00 00 6A 00 68 ? ? ? ?");
+	pattern = re4t::pattern("68 B8 00 00 00 6A 00 68 ? ? ? ?");
 	Snd_ctrl_work = *pattern.count(1).get(0).get<SND_CTRL*>(8);
 
 	// g_GameSave_BufPtr pointer (not actual name)
-	pattern = hook::pattern("89 15 ? ? ? ? C7 05 ? ? ? ? A0 FA 0F 00");
+	pattern = re4t::pattern("89 15 ? ? ? ? C7 05 ? ? ? ? A0 FA 0F 00");
 	g_GameSave_BufPtr = *pattern.count(1).get(0).get<uint8_t**>(2);
 
 	// GPU/CPU usage values
-	pattern = hook::pattern("DD 05 ? ? ? ? DD 05 ? ? ? ? DC C9 D9 C9 E8 ? ? ? ? DC 0D");
+	pattern = re4t::pattern("DD 05 ? ? ? ? DD 05 ? ? ? ? DC C9 D9 C9 E8 ? ? ? ? DC 0D");
 	fGPUUsagePtr = *pattern.count(1).get(0).get<double*>(2);
 	fCPUUsagePtr = *pattern.count(1).get(0).get<double*>(0x17);
 
 	// Pointer to KeyOnCheck_0
-	pattern = hook::pattern("E8 ? ? ? ? 83 C4 ? 84 C0 74 ? C7 86 ? ? ? ? ? ? ? ? 5E B8 ? ? ? ? 5B 8B E5 5D C3 53");
+	pattern = re4t::pattern("E8 ? ? ? ? 83 C4 ? 84 C0 74 ? C7 86 ? ? ? ? ? ? ? ? 5E B8 ? ? ? ? 5B 8B E5 5D C3 53");
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), bio4::KeyOnCheck_0);
 
 	// Pointer to KeyStop
-	pattern = hook::pattern("E8 ? ? ? ? 83 C4 08 E8 ? ? ? ? 8B 0D ? ? ? ? F7 81 ? ? ? ? ? ? ? ? 74");
+	pattern = re4t::pattern("E8 ? ? ? ? 83 C4 08 E8 ? ? ? ? 8B 0D ? ? ? ? F7 81 ? ? ? ? ? ? ? ? 74");
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), bio4::KeyStop);
 
 	// IDSystem ptrs
-	pattern = hook::pattern("B9 ? ? ? ? E8 ? ? ? ? 8B ? ? ? ? ? 8B C8 D9");
+	pattern = re4t::pattern("B9 ? ? ? ? E8 ? ? ? ? 8B ? ? ? ? ? 8B C8 D9");
 	IdSys_ptr = *pattern.count(1).get(0).get<IDSystem*>(1);
-	pattern = hook::pattern("8D 48 FF 80 F9 01 77 ? C7 ? ? ? ? ? EB");
+	pattern = re4t::pattern("8D 48 FF 80 F9 01 77 ? C7 ? ? ? ? ? EB");
 	IdSub_ptr = *pattern.count(1).get(0).get<IDSystem*>(10);
-	pattern = hook::pattern("83 C4 08 B9 ? ? ? ? 39");
+	pattern = re4t::pattern("83 C4 08 B9 ? ? ? ? 39");
 	IdNum_ptr = *pattern.count(1).get(0).get<IDSystem*>(4);
-	pattern = hook::pattern("83 C4 18 6A 60 B9");
+	pattern = re4t::pattern("83 C4 18 6A 60 B9");
 	mercId_ptr = *pattern.count(1).get(0).get<MercID*>(6);
-	pattern = hook::pattern("E8 ? ? ? ? 6A 29 68 FE 00 00 00 B9");
+	pattern = re4t::pattern("E8 ? ? ? ? 6A 29 68 FE 00 00 00 B9");
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(0)).as_int(), IDSystem__set);
-	pattern = hook::pattern("E8 ? ? ? ? 8B ? ? ? ? ? 8B C8 D9 81 94 00 00 00 8B");
+	pattern = re4t::pattern("E8 ? ? ? ? 8B ? ? ? ? ? 8B C8 D9 81 94 00 00 00 8B");
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(0)).as_int(), IDSystem__unitPtr);
-	pattern = hook::pattern("E8 ? ? ? ? D9 ? ? ? ? ? D9 98 98 00 00 00 EB");
+	pattern = re4t::pattern("E8 ? ? ? ? D9 ? ? ? ? ? D9 98 98 00 00 00 EB");
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(0)).as_int(), IDSystem__unitPtr2);
-	pattern = hook::pattern("E8 ? ? ? ? 68 99 00 00 00 68 FF 00 00 00 B9 ? ? ? ? E8 ? ? ? ? 8B 46 20 8B");
+	pattern = re4t::pattern("E8 ? ? ? ? 68 99 00 00 00 68 FF 00 00 00 B9 ? ? ? ? E8 ? ? ? ? 8B 46 20 8B");
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(0)).as_int(), IDSystem__kill);
-	pattern = hook::pattern("E8 ? ? ? ? FE 46 01 5F 5E 8B E5 ");
+	pattern = re4t::pattern("E8 ? ? ? ? FE 46 01 5F 5E 8B E5 ");
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(0)).as_int(), IDSystem__setTime);
 
 	// MessageControl ptrs
-	pattern = hook::pattern("51 52 6A 04 B9 ? ? ? ? 8B F0 E8");
+	pattern = re4t::pattern("51 52 6A 04 B9 ? ? ? ? 8B F0 E8");
 	cMes_ptr = *pattern.count(1).get(0).get<MessageControl*>(5);
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(11)).as_int(), MessageControl__setFontSize);
-	pattern = hook::pattern("E8 ? ? ? ? 8B ? ? ? ? ? 53 53 52 C7");
+	pattern = re4t::pattern("E8 ? ? ? ? 8B ? ? ? ? ? 53 53 52 C7");
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(0)).as_int(), MessageControl__setLayout);
 
 	// pointer to EmMgr (instance of cManager<cEm>)
-	pattern = hook::pattern("81 E1 01 02 00 00 83 F9 01 75 ? 50 B9 ? ? ? ? E8");
+	pattern = re4t::pattern("81 E1 01 02 00 00 83 F9 01 75 ? 50 B9 ? ? ? ? E8");
 	EmMgr_ptr = *pattern.count(1).get(0).get<cEmMgr*>(0xD);
 
 	// mem_calloc call for TITLE_WORK struct
 	// (game doesn't store this in a global, so we need to capture it...)
-	pattern = hook::pattern("6A 0D 6A 01 6A 00 6A 00 68 BC 00 00 00 E8");
+	pattern = re4t::pattern("6A 0D 6A 01 6A 00 6A 00 68 BC 00 00 00 E8");
 	ReadCall(pattern.count(1).get(0).get<uint8_t>(0xD), mem_calloc);
 	InjectHook(pattern.count(1).get(0).get<uint8_t>(0xD), mem_calloc_TITLE_WORK_hook, HookType::Call);
 
 	// pointer to FadeWork
-	pattern = hook::pattern("68 ? ? ? ? E8 ? ? ? ? D9 EE D9 15 ? ? ? ? 83 C4 08 ");
+	pattern = re4t::pattern("68 ? ? ? ? E8 ? ? ? ? D9 EE D9 15 ? ? ? ? 83 C4 08 ");
 	FadeWork_ptr = *pattern.count(1).get(0).get<FADE_WORK(*)[4]>(1);
 
 	// Mem_free call for TITLE_WORK, so we can set to nullptr once game frees it
-	pattern = hook::pattern("56 E8 ? ? ? ? 6A 01 E8 ? ? ? ? 68 C0 01 00 00");
+	pattern = re4t::pattern("56 E8 ? ? ? ? 6A 01 E8 ? ? ? ? 68 C0 01 00 00");
 	ReadCall(pattern.count(1).get(0).get<uint8_t>(0x1), Mem_free);
 	InjectHook(pattern.count(1).get(0).get<uint8_t>(0x1), Mem_free_TITLE_WORK_hook, HookType::Call);
 
 	// LightMgr pointer
-	pattern = hook::pattern("6A 00 53 6A 00 57 B9 ? ? ? ?");
+	pattern = re4t::pattern("6A 00 53 6A 00 57 B9 ? ? ? ?");
 	LightMgr = (cLightMgr*)*pattern.count(1).get(0).get<uint32_t>(7);
 
 	// Filter00Params ptrs
-	pattern = hook::pattern("D9 EE 33 C0 D9 15 ? ? ? ? A2 ? ? ? ?");
+	pattern = re4t::pattern("D9 EE 33 C0 D9 15 ? ? ? ? A2 ? ? ? ?");
 	auto varPtr = pattern.count(3).get(0).get<uint32_t>(11);
 	Filter00Params = (cFilter00Params*)*varPtr;
 
@@ -1086,169 +1086,169 @@ bool re4t::init::Game()
 	Filter00Params2 = (cFilter00Params2*)*varPtr;
 
 	// cLightMgr::setEnv ptr
-	pattern = hook::pattern("55 8B EC 51 53 56 8B 75 ? 8B 46 ? A3 ? ? ? ? 8B D9 8B 4E ?");
+	pattern = re4t::pattern("55 8B EC 51 53 56 8B 75 ? 8B 46 ? A3 ? ? ? ? 8B D9 8B 4E ?");
 	cLightMgr__setEnv = (cLightMgr__setEnv_Fn)pattern.count(1).get(0).get<uint8_t>(0);
 
 	// ItemMgr
-	pattern = hook::pattern("80 B9 C0 4F 00 00 10 0F 84 ? ? ? ? B9");
+	pattern = re4t::pattern("80 B9 C0 4F 00 00 10 0F 84 ? ? ? ? B9");
 	ItemMgr = *pattern.count(1).get(0).get<cItemMgr*>(0xE);
-	pattern = hook::pattern("83 C4 08 50 B9 ? ? ? ? E8 ? ? ? ? 85 C0 0F 94 45 FF");
+	pattern = re4t::pattern("83 C4 08 50 B9 ? ? ? ? E8 ? ? ? ? 85 C0 0F 94 45 FF");
 	ReadCall(pattern.count(1).get(0).get<uint8_t>(9), cItemMgr__search);
-	pattern = hook::pattern("8B 0D ? ? ? ? 51 B9 ? ? ? ? E8 ? ? ? ? 5F 5E 5B 8B E5");
+	pattern = re4t::pattern("8B 0D ? ? ? ? 51 B9 ? ? ? ? E8 ? ? ? ? 5F 5E 5B 8B E5");
 	ReadCall(pattern.count(1).get(0).get<uint8_t>(12), cItemMgr__arm);
-	pattern = hook::pattern("56 50 B9 ? ? ? ? E8 ? ? ? ? A1");
+	pattern = re4t::pattern("56 50 B9 ? ? ? ? E8 ? ? ? ? A1");
 	ReadCall(pattern.count(1).get(0).get<uint8_t>(7), cItemMgr__get);
-	pattern = hook::pattern("E8 ? ? ? ? 8A 45 ? 8B 4D ? 24 ? 66 0F ? ? 8D 04 FD ? ? ? ? 66 0B ? 66 89 53");
+	pattern = re4t::pattern("E8 ? ? ? ? 8A 45 ? 8B 4D ? 24 ? 66 0F ? ? 8D 04 FD ? ? ? ? 66 0B ? 66 89 53");
 	ReadCall(pattern.count(1).get(0).get<uint8_t>(0), cItemMgr__erase);
-	pattern = hook::pattern("E8 ? ? ? ? 66 85 C0 75 ? 6A 04 6A 08 6A FF");
+	pattern = re4t::pattern("E8 ? ? ? ? 66 85 C0 75 ? 6A 04 6A 08 6A FF");
 	ReadCall(pattern.count(1).get(0).get<uint8_t>(0), cItemMgr__num_0);
-	pattern = hook::pattern("E8 ? ? ? ? 0F B7 C0 85 C0 74 05 D1");
+	pattern = re4t::pattern("E8 ? ? ? ? 0F B7 C0 85 C0 74 05 D1");
 	ReadCall(pattern.count(1).get(0).get<uint8_t>(0), cItemMgr__bulletNumTotal);
 
 	// EvtMgr
-	pattern = hook::pattern("75 ? 6A 00 6A 00 68 ? ? ? ? B9 ? ? ? ? E8 ? ? ? ? 84 C0");
+	pattern = re4t::pattern("75 ? 6A 00 6A 00 68 ? ? ? ? B9 ? ? ? ? E8 ? ? ? ? 84 C0");
 	EvtMgr = *pattern.count(1).get(0).get<EventMgr*>(0xC);
 	ReadCall(pattern.count(1).get(0).get<uint8_t>(0x10), EventMgr__IsAliveEvt);
 
 	// g_p_Item_piece ptr (not actual name)
-	pattern = hook::pattern("E8 ? ? ? ? 83 C4 08 8B 35 ? ? ? ? 85 F6 0F 84");
+	pattern = re4t::pattern("E8 ? ? ? ? 83 C4 08 8B 35 ? ? ? ? 85 F6 0F 84");
 	g_p_Item_piece = *pattern.count(1).get(0).get<itemPiece**>(10);
 
 	// Hook call to cSceSys::scheduler, so we can run code inside the main thread before other things update
-	pattern = hook::pattern("74 ? B9 ? ? ? ? E8 ? ? ? ? B9 ? ? ? ? E8 ? ? ? ? E8");
+	pattern = re4t::pattern("74 ? B9 ? ? ? ? E8 ? ? ? ? B9 ? ? ? ? E8 ? ? ? ? E8");
 	auto cSceSys__scheduler_thunk = injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(17));
 	ReadCall(cSceSys__scheduler_thunk.as_int(), cSceSys__scheduler);
 	InjectHook(cSceSys__scheduler_thunk.as_int(), cSceSys__scheduler_Hook, HookType::Jump);
 
 	// WeaponChange funcptr
-	pattern = hook::pattern("6A 01 E8 ? ? ? ? 83 C4 04 E8 ? ? ? ? F6");
+	pattern = re4t::pattern("6A 01 E8 ? ? ? ? 83 C4 04 E8 ? ? ? ? F6");
 	ReadCall(pattern.count(1).get(0).get<uint8_t>(0xA), bio4::WeaponChange);
 
 	// Card related funcptrs
-	pattern = hook::pattern("E8 ? ? ? ? 3C 01 75 ? 8B 4D ? 8B 55");
+	pattern = re4t::pattern("E8 ? ? ? ? 3C 01 75 ? 8B 4D ? 8B 55");
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), bio4::CardCheckDone);
-	pattern = hook::pattern("E8 ? ? ? ? 6A ? E8 ? ? ? ? 83 C4 ? 8B 15 ? ? ? ? A1");
+	pattern = re4t::pattern("E8 ? ? ? ? 6A ? E8 ? ? ? ? 83 C4 ? 8B 15 ? ? ? ? A1");
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), bio4::CardSave);
-	pattern = hook::pattern("6A 00 E8 ? ? ? ? 83 C4 04 3C 01 75 ? 6A 17");
+	pattern = re4t::pattern("6A 00 E8 ? ? ? ? 83 C4 04 3C 01 75 ? 6A 17");
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(2)).as_int(), bio4::CardLoad);
 
 	// SndCall funcptr
-	pattern = hook::pattern("05 94 00 00 00 50 6A 0C 6A 01 E8");
+	pattern = re4t::pattern("05 94 00 00 00 50 6A 0C 6A 01 E8");
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0xA)).as_int(), bio4::SndCall);
 
 	// SndStrReq_0 funcptr
-	pattern = hook::pattern("E8 ? ? ? ? 83 C4 10 5F B0 01 5E 8B");
+	pattern = re4t::pattern("E8 ? ? ? ? 83 C4 10 5F B0 01 5E 8B");
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), bio4::SndStrReq_0);
 
 	// QuakeExec ptr
-	pattern = hook::pattern("E8 ? ? ? ? 83 C4 14 8B E5 5D");
+	pattern = re4t::pattern("E8 ? ? ? ? 83 C4 14 8B E5 5D");
 	ReadCall(injector::GetBranchDestination(pattern.get_first()).as_int(), bio4::QuakeExec);
 	
 	// PutInCase funcptr
-	pattern = hook::pattern("0F B7 4E 1C 52 50 51 E8");
+	pattern = re4t::pattern("0F B7 4E 1C 52 50 51 E8");
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0x7)).as_int(), bio4::PutInCase);
 
 	// itemInfo funcptr
-	pattern = hook::pattern("8D 45 ? 50 51 E8 ? ? ? ? 8A 45 ? 83 C4 08");
+	pattern = re4t::pattern("8D 45 ? 50 51 E8 ? ? ? ? 8A 45 ? 83 C4 08");
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0x5)).as_int(), bio4::itemInfo);
 
 	// WeaponId2MaxLevel funcptr
-	pattern = hook::pattern("E8 ? ? ? ? 0F B6 D0 0F BE C3 83 C4 08 3B C2 75 70");
+	pattern = re4t::pattern("E8 ? ? ? ? 0F B6 D0 0F BE C3 83 C4 08 3B C2 75 70");
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), bio4::WeaponId2MaxLevel);
 
 	// WeaponId2WeaponNo funcptr
-	pattern = hook::pattern("E8 ? ? ? ? 0F B7 15 ? ? ? ? 0F B6 C8 52 89 4D E8 E8 ? ? ? ? 0F B6 C0");
+	pattern = re4t::pattern("E8 ? ? ? ? 0F B7 15 ? ? ? ? 0F B6 C8 52 89 4D E8 E8 ? ? ? ? 0F B6 C0");
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), bio4::WeaponId2WeaponNo);
 
 	// WeaponId2ChargeNum funcptr
-	pattern = hook::pattern("E8 ? ? ? ? B9 ? ? ? ? 83 C4 ? 66 3B ? 0F 84");
+	pattern = re4t::pattern("E8 ? ? ? ? B9 ? ? ? ? 83 C4 ? 66 3B ? 0F 84");
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), WeaponId2ChargeNum);
 
 	// cItem::specialTuned funcptr
-	pattern = hook::pattern("8B CE E8 ? ? ? ? 84 C0 74 ? C6");
+	pattern = re4t::pattern("8B CE E8 ? ? ? ? 84 C0 74 ? C6");
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(2)).as_int(), cItem__specialTuned);
 
 	// levelDataAdd funcptr
-	pattern = hook::pattern("E8 ? ? ? ? A1 ? ? ? ? 83 C4 ? 81 88 ? ? ? ? ? ? ? ? 8B 0D ? ? ? ? 0F B7 81 ? ? ? ? 8D 88");
+	pattern = re4t::pattern("E8 ? ? ? ? A1 ? ? ? ? 83 C4 ? 81 88 ? ? ? ? ? ? ? ? 8B 0D ? ? ? ? 0F B7 81 ? ? ? ? 8D 88");
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), bio4::levelDataAdd);
 
 	// OptionOpenFlag <- Maybe should be somewhere else in the SDK/Game.cpp?
-	pattern = hook::pattern("A2 ? ? ? ? A2 ? ? ? ? A1 ? ? ? ? 81 48 ? ? ? ? ? E9");
+	pattern = re4t::pattern("A2 ? ? ? ? A2 ? ? ? ? A1 ? ? ? ? 81 48 ? ? ? ? ? E9");
 	OptionOpenFlag_ptr = (bool*)*pattern.count(1).get(0).get<uint32_t>(1);
 
 	// PlChangeData funcptr
-	pattern = hook::pattern("75 ? E8 ? ? ? ? E8 ? ? ? ? 38 1D ? ? ? ?");
+	pattern = re4t::pattern("75 ? E8 ? ? ? ? E8 ? ? ? ? 38 1D ? ? ? ?");
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0x7)).as_int(), bio4::PlChangeData);
 
 	// joyFireTrg ptr
-	pattern = hook::pattern("E8 ? ? ? ? 85 C0 74 ? 8B 96 D8 07 00 00 8B 4A 34 F6 81 55 03");
+	pattern = re4t::pattern("E8 ? ? ? ? 85 C0 74 ? 8B 96 D8 07 00 00 8B 4A 34 F6 81 55 03");
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(0)).as_int(), bio4::joyFireTrg);
 
 	// joyFireOn ptr
-	pattern = hook::pattern("E8 ? ? ? ? 85 C0 74 ? 8B 8E D8 07 00 00 8B 49 34 E8 ? ? ? ? 84 C0 0F ? ? ? ? ? 8B");
+	pattern = re4t::pattern("E8 ? ? ? ? 85 C0 74 ? 8B 8E D8 07 00 00 8B 49 34 E8 ? ? ? ? 84 C0 0F ? ? ? ? ? 8B");
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(0)).as_int(), bio4::joyFireOn);
 
 	// Cockpit ptr
-	pattern = hook::pattern("FF FE FF FF B9");
+	pattern = re4t::pattern("FF FE FF FF B9");
 	Cckpt = *pattern.count(1).get(0).get<Cockpit*>(5);
 	// Lifemeter::RoomInit
-	pattern = hook::pattern("66 C7 86 BD 00 00 00 00 00 E8");
+	pattern = re4t::pattern("66 C7 86 BD 00 00 00 00 00 E8");
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(9)).as_int(), LifeMeter__roomInit);
 	// BulletInfo::RoomInit
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(17)).as_int(), BulletInfo__roomInit);
 
 	// SubScreenOpen funcptr
-	pattern = hook::pattern("55 8B EC A1 ? ? ? ? B9 ? ? ? ? 85 88");
+	pattern = re4t::pattern("55 8B EC A1 ? ? ? ? B9 ? ? ? ? 85 88");
 	bio4::SubScreenOpen = (decltype(bio4::SubScreenOpen))pattern.count(1).get(0).get<uint32_t>(0);
 
 	// SubScreenWk ptr
-	pattern = hook::pattern("68 ? ? ? ? E8 ? ? ? ? 68 00 00 00 F0 E8");
+	pattern = re4t::pattern("68 ? ? ? ? E8 ? ? ? ? 68 00 00 00 F0 E8");
 	SubScreenWk = *pattern.count(1).get(0).get<SUB_SCREEN*>(1);
 
 	// pzlPlayer::ptrPiece
-	pattern = hook::pattern("8B 41 30 50 E8 ? ? ? ? C3");
+	pattern = re4t::pattern("8B 41 30 50 E8 ? ? ? ? C3");
 	ReadCall(pattern.count(1).get(0).get<uint8_t>(4), pzlPlayer__ptrPiece);
 
 	// j_j_j_FadeSet (kept the werid j_j_j to make clear this is the simplified version of FadeSet that takes less params)
-	pattern = hook::pattern("E8 ? ? ? ? 53 53 53 53 6A 04 53 E8 ? ? ? ? 83 C4 24 E9");
+	pattern = re4t::pattern("E8 ? ? ? ? 53 53 53 53 6A 04 53 E8 ? ? ? ? 83 C4 24 E9");
 	ReadCall(pattern.count(1).get(0).get<uint8_t>(0), j_j_j_FadeSet);
 
 	// cPlayer::subScrCheck
-	pattern = hook::pattern("80 B9 FC 00 00 00 00 75 ? 8A 81 FD 00 00 00");
+	pattern = re4t::pattern("80 B9 FC 00 00 00 00 75 ? 8A 81 FD 00 00 00");
 	cPlayer__subScrCheck = (cPlayer__subScrCheck_Fn)pattern.count(1).get(0).get<uint32_t>(0);
 
 	// CamSmth ptr
-	pattern = hook::pattern("56 B9 ? ? ? ? E8 ? ? ? ? 8D 53 60");
+	pattern = re4t::pattern("56 B9 ? ? ? ? E8 ? ? ? ? 8D 53 60");
 	CamSmth = *pattern.count(1).get(0).get<CameraSmooth*>(2);
 
 	// CamCtrl ptr
-	pattern = hook::pattern("D9 EE B9 ? ? ? ? D9 9E A4 00 00 00 E8 ? ? ? ? D9 EE");
+	pattern = re4t::pattern("D9 EE B9 ? ? ? ? D9 9E A4 00 00 00 E8 ? ? ? ? D9 EE");
 	CamCtrl = *pattern.count(1).get(0).get<CameraControl*>(3);
 
 	// Patch CameraQuasiFPS::init to use our CamSmoothRatioNew value
-	pattern = hook::pattern("D9 05 ? ? ? ? 56 8B F1 D9 96 B0 01 00 00");
+	pattern = re4t::pattern("D9 05 ? ? ? ? 56 8B F1 D9 96 B0 01 00 00");
 	injector::WriteMemory<float*>(pattern.count(1).get(0).get<float*>(2), &CamSmoothRatioNew, true);
 
 	// Sofdec ptr
-	pattern = hook::pattern("B9 ? ? ? ? C6 86 1F 05 00 00 01");
+	pattern = re4t::pattern("B9 ? ? ? ? C6 86 1F 05 00 00 01");
 	cSofdec = *pattern.count(1).get(0).get<uint32_t*>(1);
 
 	// SatMgr/EatMgr ptrs
-	pattern = hook::pattern("8D 8E B4 02 00 00 E8 ? ? ? ? 6A 00 56 B9");
+	pattern = re4t::pattern("8D 8E B4 02 00 00 E8 ? ? ? ? 6A 00 56 B9");
 	SatMgr = *pattern.count(1).get(0).get<cSatMgr*>(0xF);
-	pattern = hook::pattern("6A 00 53 56 50 51 B9 ? ? ? ? E8");
+	pattern = re4t::pattern("6A 00 53 56 50 51 B9 ? ? ? ? E8");
 	EatMgr = *pattern.count(1).get(0).get<cSatMgr*>(0x7);
 
 	// RoomData ptrs
-	pattern = hook::pattern("8B 45 ? 50 B9 ? ? ? ? E8 ? ? ? ? 85 C0");
+	pattern = re4t::pattern("8B 45 ? 50 B9 ? ? ? ? E8 ? ? ? ? 85 C0");
 	RoomData = *pattern.count(1).get(0).get<cRoomData*>(0x5);
 	ReadCall(pattern.count(1).get(0).get<uint8_t>(9), cRoomData__getRoomSavePtr);
 
 	// GX function ptrs
-	pattern = hook::pattern("56 53 6A 05 6A 04 6A 01 E8");
+	pattern = re4t::pattern("56 53 6A 05 6A 04 6A 01 E8");
 	ReadCall(pattern.count(1).get(0).get<uint8_t>(0x8), bio4::GXSetBlendMode); // 0x956E60
 
-	pattern = hook::pattern("53 E8 ? ? ? ? 6A 01 6A 07 53 E8");
+	pattern = re4t::pattern("53 E8 ? ? ? ? 6A 01 6A 07 53 E8");
 	ReadCall(pattern.count(1).get(0).get<uint8_t>(0x1), bio4::GXSetCullMode); // 0x957130
 	ReadCall(pattern.count(1).get(0).get<uint8_t>(0xB), bio4::GXSetZMode); // 0x957FE0
 	ReadCall(pattern.count(1).get(0).get<uint8_t>(0x11), bio4::GXSetNumTexGens); // 0x9575F0
@@ -1256,73 +1256,73 @@ bool re4t::init::Game()
 	ReadCall(pattern.count(1).get(0).get<uint8_t>(0x20), bio4::GXSetTevOp); // 0x957AC0
 	ReadCall(pattern.count(1).get(0).get<uint8_t>(0x32), bio4::GXSetTevOrder); // 0x957B30
 
-	pattern = hook::pattern("83 C4 48 6A 01 E8 ? ? ? ? 6A 02 53");
+	pattern = re4t::pattern("83 C4 48 6A 01 E8 ? ? ? ? 6A 02 53");
 	ReadCall(pattern.count(1).get(0).get<uint8_t>(0x5), bio4::GXSetNumChans); // 0x9574A0
 
-	pattern = hook::pattern("6A 01 6A 01 53 53 6A 04 E8");
+	pattern = re4t::pattern("6A 01 6A 01 53 53 6A 04 E8");
 	ReadCall(pattern.count(1).get(0).get<uint8_t>(0x8), bio4::GXSetChanCtrl); // 0x956F50
 	ReadCall(pattern.count(1).get(0).get<uint8_t>(0xD), bio4::GXClearVtxDesc); // 0x9558C0
 	ReadCall(pattern.count(1).get(0).get<uint8_t>(0x16), bio4::GXSetVtxDesc); // 0x957F70
 	ReadCall(pattern.count(1).get(0).get<uint8_t>(0x2C), bio4::GXSetVtxAttrFmt); // 0x957EF0
 
-	pattern = hook::pattern("52 E8 ? ? ? ? 8D 45 ? 53 50 E8 ? ? ? ? 53 E8");
+	pattern = re4t::pattern("52 E8 ? ? ? ? 8D 45 ? 53 50 E8 ? ? ? ? 53 E8");
 	ReadCall(pattern.count(1).get(0).get<uint8_t>(0xB), bio4::GXLoadPosMtxImm); // 0x956310
 	ReadCall(pattern.count(1).get(0).get<uint8_t>(0x11), bio4::GXSetCurrentMtx); // 0x9571A0
 
-	pattern = hook::pattern("6A 0C 53 68 90 00 00 00 E8");
+	pattern = re4t::pattern("6A 0C 53 68 90 00 00 00 E8");
 	ReadCall(pattern.count(1).get(0).get<uint8_t>(0x8), bio4::GXBegin); // 0x955840
 
-	pattern = hook::pattern("53 53 53 E8 ? ? ? ? 53 E8");
+	pattern = re4t::pattern("53 53 53 E8 ? ? ? ? 53 E8");
 	ReadCall(pattern.count(1).get(0).get<uint8_t>(0x3), bio4::GXColor4u8); // 0x955B60
 	ReadCall(pattern.count(1).get(0).get<uint8_t>(0x9), bio4::GXEnd); // 0x955E50
 
-	pattern = hook::pattern("D9 04 08 D9 1C ? E8");
+	pattern = re4t::pattern("D9 04 08 D9 1C ? E8");
 	ReadCall(pattern.count(1).get(0).get<uint8_t>(0x6), bio4::GXPosition3f32); // 0x956A70
 
-	pattern = hook::pattern("E8 ? ? ? ? 47 83 C4 ? 83 C6 ? 3B 3D ? ? ? ? 0F 82");
+	pattern = re4t::pattern("E8 ? ? ? ? 47 83 C4 ? 83 C6 ? 3B 3D ? ? ? ? 0F 82");
 	ReadCall(injector::GetBranchDestination(pattern.get_first()).as_int(), bio4::GXShaderCall);
 
-	pattern = hook::pattern("E8 ? ? ? ? 0F B7 4E ? 0F B7 56 ? 6A ? 6A ? 51");
+	pattern = re4t::pattern("E8 ? ? ? ? 0F B7 4E ? 0F B7 56 ? 6A ? 6A ? 51");
 	ReadCall(injector::GetBranchDestination(pattern.get_first()).as_int(), bio4::GXSetTexCopySrc);
 
-	pattern = hook::pattern("E8 ? ? ? ? A1 ? ? ? ? 6A 04 6A 00 50 E8");
+	pattern = re4t::pattern("E8 ? ? ? ? A1 ? ? ? ? 6A 04 6A 00 50 E8");
 	ReadCall(injector::GetBranchDestination(pattern.get_first()).as_int(), bio4::GXSetTexCopyDst);
 
-	pattern = hook::pattern("E8 ? ? ? ? D9 05 ? ? ? ? D9 7D ? 6A ? 0F B7 45");
+	pattern = re4t::pattern("E8 ? ? ? ? D9 05 ? ? ? ? D9 7D ? 6A ? 0F B7 45");
 	ReadCall(injector::GetBranchDestination(pattern.get_first()).as_int(), bio4::GXCopyTex);
 
-	pattern = hook::pattern("E8 ? ? ? ? 8B 4D ? 51 E8 ? ? ? ? 8B 4D ? 83 C4 ? 33 CD");
+	pattern = re4t::pattern("E8 ? ? ? ? 8B 4D ? 51 E8 ? ? ? ? 8B 4D ? 83 C4 ? 33 CD");
 	ReadCall(injector::GetBranchDestination(pattern.get_first()).as_int(), bio4::GXTexCoord2f32);
 
-	pattern = hook::pattern("E8 ? ? ? ? 8A 46 30 3C FD");
+	pattern = re4t::pattern("E8 ? ? ? ? 8A 46 30 3C FD");
 	ReadCall(pattern.count(1).get(0).get<uint8_t>(0x0), bio4::CameraCurrentProjection); // 0x59F3A0
 
-	pattern = hook::pattern("E8 ? ? ? ? 8D 4D BC 6A 01 51 E8 ? ? ? ? 8D 55 98 52 8D 45 B0 50 8D 4D A4 51 56 E8 ? ? ? ? 8B 4D FC 83 C4 34");
+	pattern = re4t::pattern("E8 ? ? ? ? 8D 4D BC 6A 01 51 E8 ? ? ? ? 8D 55 98 52 8D 45 B0 50 8D 4D A4 51 56 E8 ? ? ? ? 8B 4D FC 83 C4 34");
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), bio4::C_MTXOrtho);
 
-	pattern = hook::pattern("E8 ? ? ? ? 83 C4 04 4E 75 C1 8B 0D ? ? ? ? 8B 91");
+	pattern = re4t::pattern("E8 ? ? ? ? 83 C4 04 4E 75 C1 8B 0D ? ? ? ? 8B 91");
 	ReadCall(pattern.count(2).get(0).get<uint8_t>(0), bio4::SceSleep);
 
 	// Get pointer to some D3D globals
-	pattern = hook::pattern("89 35 ? ? ? ? 89 15 ? ? ? ? A3 ? ? ? ? 89");
+	pattern = re4t::pattern("89 35 ? ? ? ? 89 15 ? ? ? ? A3 ? ? ? ? 89");
 	bio4::g_D3D::RefreshRate = (uint32_t*)*pattern.count(1).get(0).get<uint32_t>(2);
 
-	pattern = hook::pattern("8B 15 ? ? ? ? 3B 14 ? 75 ? 8B 15 ? ? ? ? 3B 54 38");
+	pattern = re4t::pattern("8B 15 ? ? ? ? 3B 14 ? 75 ? 8B 15 ? ? ? ? 3B 54 38");
 	bio4::g_D3D::Width_1 = (uint32_t*)*pattern.count(1).get(0).get<uint32_t>(2);
 	bio4::g_D3D::Height_1 = bio4::g_D3D::Width_1 + 1;
 	
-	pattern = hook::pattern("38 1D ? ? ? ? 74 0C BE ? ? ? ? BF ? ? ? ? EB 1F 8B 15 ? ? ? ? 6A 40 51 50 53");
+	pattern = re4t::pattern("38 1D ? ? ? ? 74 0C BE ? ? ? ? BF ? ? ? ? EB 1F 8B 15 ? ? ? ? 6A 40 51 50 53");
 	bio4::g_D3D::Fullscreen = (bool*)*pattern.count(1).get(0).get<uint32_t>(2);
 
 	// Pointer to D3D_SetupResolution
-	pattern = hook::pattern("E8 ? ? ? ? 68 ? ? ? ? 68 ? ? ? ? E8 ? ? ? ? 83 C4 ? E8 ? ? ? ? 83 C0 ? 50 E8 ? ? ? ? 8B 0E");
+	pattern = re4t::pattern("E8 ? ? ? ? 68 ? ? ? ? 68 ? ? ? ? E8 ? ? ? ? 83 C4 ? E8 ? ? ? ? 83 C0 ? 50 E8 ? ? ? ? 8B 0E");
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), bio4::D3D_SetupResolution);
 
 	// Pointer to D3D_SetupResolution
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(15)).as_int(), bio4::ScreenReSize);
 
 	// Store current game time that's being calculated inside GetGameTime
-	pattern = hook::pattern("8B 55 ? 8B 45 ? 51 8B 4D ? 52 50 51 68");
+	pattern = re4t::pattern("8B 55 ? 8B 45 ? 51 8B 4D ? 52 50 51 68");
 	struct GetGameTime_hook
 	{
 		void operator()(injector::reg_pack& regs)

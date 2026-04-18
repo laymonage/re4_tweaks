@@ -351,47 +351,47 @@ void ToolMenu_OpenMerchant()
 
 void GetToolMenuPointers()
 {
-	auto pattern = hook::pattern("80 3D ? ? ? ? ? 75 91 E9 ? ? ? ? ");
+	auto pattern = re4t::pattern("80 3D ? ? ? ? ? 75 91 E9 ? ? ? ? ");
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(9)).as_int(), DbMenuExec);
 
-	pattern = hook::pattern("E8 ? ? ? ? 8D 4D ? 51 8D 55 ? 52 8D 45 ? 50 E8 ? ? ? ? 8B 0D");
+	pattern = re4t::pattern("E8 ? ? ? ? 8D 4D ? 51 8D 55 ? 52 8D 45 ? 50 E8 ? ? ? ? 8B 0D");
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), GameTask_callee_Orig);
 
-	pattern = hook::pattern("55 8B EC 83 EC ? 56 8B 75 ? 56 E8 ? ? ? ? 50 68 ? ? ? ? 68 00 01 00 00 68 ? ? ? ?");
+	pattern = re4t::pattern("55 8B EC 83 EC ? 56 8B 75 ? 56 E8 ? ? ? ? 50 68 ? ? ? ? 68 00 01 00 00 68 ? ? ? ?");
 	GXLoadImage = (decltype(GXLoadImage))pattern.count(1).get(0).get<uint32_t>(0);
 
-	pattern = hook::pattern("55 8B EC 8B 0D ? ? ? ? 8B 81 ? ? ? ? 83 C0 30");
+	pattern = re4t::pattern("55 8B EC 8B 0D ? ? ? ? 8B 81 ? ? ? ? 83 C0 30");
 	GX_ScreenDisp = (decltype(GX_ScreenDisp))pattern.count(1).get(0).get<uint32_t>(0);
 
-	pattern = hook::pattern("E8 ? ? ? ? D9 05 ? ? ? ? 8B 4D ? 89 41");
+	pattern = re4t::pattern("E8 ? ? ? ? D9 05 ? ? ? ? 8B 4D ? 89 41");
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), DvdReadN);
 
-	pattern = hook::pattern("E8 ? ? ? ? 85 C0 0F 84 ? ? ? ? FE 46 ? 8B 07");
+	pattern = re4t::pattern("E8 ? ? ? ? 85 C0 0F 84 ? ? ? ? FE 46 ? 8B 07");
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), cDvd__ReadCheck);
 
-	pattern = hook::pattern("E8 ? ? ? ? 85 C0 79 ? 33 C0 5E 8B E5 5D C2 ? ? 8B 86");
+	pattern = re4t::pattern("E8 ? ? ? ? 85 C0 79 ? 33 C0 5E 8B E5 5D C2 ? ? 8B 86");
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), cDvd__FileExistCheck);
 
-	pattern = hook::pattern("A1 ? ? ? ? B9 FF FF FF 7F 21 48 ? A1");
+	pattern = re4t::pattern("A1 ? ? ? ? B9 FF FF FF 7F 21 48 ? A1");
 	FlagEdit_die = (decltype(FlagEdit_die))pattern.count(1).get(0).get<uint8_t>(0);
 	FlagEdit_Backup_pG = *(uint32_t**)pattern.count(1).get(0).get<uint8_t>(0x14);
 
-	pattern = hook::pattern(re4t::sections::data, "FF FF FF FF FF FF 00 00 FF 00");
+	pattern = re4t::pattern(re4t::sections::data, "FF FF FF FF FF FF 00 00 FF 00");
 	DbgFontColorArray = pattern.count(1).get(0).get<uint32_t>(0);
 
-	pattern = hook::pattern("99 56 8B 35 ? ? ? ? 89 55");
+	pattern = re4t::pattern("99 56 8B 35 ? ? ? ? 89 55");
 	auto varPtr = pattern.count(1).get(0).get<uint32_t>(4);
 	PadButtonStates = (uint32_t*)*varPtr;
 
-	pattern = hook::pattern("6A 40 52 B9 ? ? ? ? E8");
+	pattern = re4t::pattern("6A 40 52 B9 ? ? ? ? E8");
 	varPtr = pattern.count(1).get(0).get<uint32_t>(4);
 	cDvd = (void*)*varPtr;
 
-	pattern = hook::pattern("FF BF FF FF 6A 04 E8 ? ? ? ? 83 C4 ? 85 C0 74 ? 8B 15 ? ? ? ?");
+	pattern = re4t::pattern("FF BF FF FF 6A 04 E8 ? ? ? ? 83 C4 ? 85 C0 74 ? 8B 15 ? ? ? ?");
 	varPtr = pattern.count(1).get(0).get<uint32_t>(20);
 	roomInfoAddr = (uint32_t*)*varPtr;
 
-	pattern = hook::pattern("53 56 33 C0 BE ? ? ? ? 8D A4 24 00 00 00 00");
+	pattern = re4t::pattern("53 56 33 C0 BE ? ? ? ? 8D A4 24 00 00 00 00");
 	varPtr = pattern.count(1).get(0).get<uint32_t>(5);
 	ToolMenuEntries = (ToolMenuEntry*)*varPtr;
 
@@ -403,7 +403,7 @@ void re4t::init::ToolMenu()
 	GetToolMenuPointers();
 
 	// Hook systemRestartInit so we can make it load in roomInfo.dat
-	auto pattern = hook::pattern("E8 ? ? ? ? 80 3D ? ? ? ? ? 74 ? 80 3D ? ? ? ? ? 75");
+	auto pattern = re4t::pattern("E8 ? ? ? ? 80 3D ? ? ? ? ? 74 ? 80 3D ? ? ? ? ? 75");
 	auto func = pattern.count(1).get(0).get<uint32_t>(0);
 	ReadCall(func, systemRestartInit_Orig);
 	InjectHook(func, systemRestartInit_Hook);
@@ -412,7 +412,7 @@ void re4t::init::ToolMenu()
 		return;
 
 	// Hook FlagEdit so we can slow it down by only exposing buttons to it when button state has changed at all
-	pattern = hook::pattern("8B 14 8D ? ? ? ? 68 ? ? ? ? FF D2 A1 ? ? ? ? 8B 88");
+	pattern = re4t::pattern("8B 14 8D ? ? ? ? 68 ? ? ? ? FF D2 A1 ? ? ? ? 8B 88");
 	uint32_t* FlagEdit_funcs = *pattern.count(1).get(0).get<uint32_t*>(3);
 
 	FlagEdit_main_Orig = (decltype(FlagEdit_main_Orig))FlagEdit_funcs[0];
@@ -421,19 +421,19 @@ void re4t::init::ToolMenu()
 	// Hook MenuTask (task for tool-menu), since it seems the menu can sometimes be shown without the pG+0x60 flag being set
 	// eg. when backing out of area-jump menu
 	// (which could make game hang if this causes us to try opening tool-menu when it's already open...)
-	pattern = hook::pattern("53 57 33 DB 53 E8 ? ? ? ? 6A 01 E8 ? ? ? ? 83 C4");
+	pattern = re4t::pattern("53 57 33 DB 53 E8 ? ? ? ? 6A 01 E8 ? ? ? ? 83 C4");
 	MenuTask_Orig = (decltype(MenuTask_Orig))pattern.count(1).get(0).get<uint32_t>(0);
 
-	pattern = hook::pattern("68 ? ? ? ? 6A 04 E8 ? ? ? ? 83 C4 0C");
+	pattern = re4t::pattern("68 ? ? ? ? 6A 04 E8 ? ? ? ? 83 C4 0C");
 	injector::WriteMemory(pattern.count(1).get(0).get<uint32_t>(1), &MenuTask_Hook, true);
 
-	pattern = hook::pattern("52 68 ? ? ? ? E8 ? ? ? ? 83 C4 ? 5D");
+	pattern = re4t::pattern("52 68 ? ? ? ? E8 ? ? ? ? 83 C4 ? 5D");
 	injector::WriteMemory(pattern.count(1).get(0).get<uint32_t>(2), &MenuTask_Hook, true);
 
 	if (GameVersionIsDebug())
 	{
 		// hook gameDebug so we can use the gamepad emulation stuff to add keyboard support
-		pattern = hook::pattern("EB 03 8D 49 00 E8 ? ? ? ? 53 E8 ? ? ? ?");
+		pattern = re4t::pattern("EB 03 8D 49 00 E8 ? ? ? ? 53 E8 ? ? ? ?");
 		auto func = pattern.count(1).get(0).get<uint32_t>(5);
 		ReadCall(func, GameTask_callee_Orig);
 		InjectHook(func, gameDebug_recreation);
@@ -441,16 +441,16 @@ void re4t::init::ToolMenu()
 	else // If this isn't a debug build, add hooks to allow debug menu to be activated
 	{
 		// hook GameTask_callee call to run our gameDebug recreation
-		pattern = hook::pattern("53 E8 ? ? ? ? 8D 4D FC 51 8D 55 F8");
+		pattern = re4t::pattern("53 E8 ? ? ? ? 8D 4D FC 51 8D 55 F8");
 		InjectHook(pattern.count(1).get(0).get<uint32_t>(1), gameDebug_recreation);
 
 		// Hook eprintf to add screen-drawing to it, like the GC debug has
 		// (required for debug-menu to be able to draw itself)
-		pattern = hook::pattern("55 8B EC 8B 4D ? 8D 45 ? 50 51 68 ? ? ? ? E8 ? ? ? ? 83 C4 ? 5D C3");
+		pattern = re4t::pattern("55 8B EC 8B 4D ? 8D 45 ? 50 51 68 ? ? ? ? E8 ? ? ? ? 83 C4 ? 5D C3");
 		InjectHook(pattern.count(1).get(0).get<uint32_t>(0), eprintf_Hook, HookType::Jump);
 
 		// Hook titleInit to make it load dbgFont for us
-		pattern = hook::pattern("C6 05 ? ? ? ? ? E8 ? ? ? ? D9 05");
+		pattern = re4t::pattern("C6 05 ? ? ? ? ? E8 ? ? ? ? D9 05");
 		ptrtitleInitMovAddr = *pattern.count(1).get(0).get<uint32_t*>(2);
 		struct titleInit_Hook
 		{
@@ -471,22 +471,22 @@ void re4t::init::ToolMenu()
 	// Patches to change debug menu button bindings
 	{
 		// Allow tool-menu selection with X / A
-		pattern = hook::pattern("E8 ? ? ? ? F7 05 ? ? ? ? 00 04 00 00");
+		pattern = re4t::pattern("E8 ? ? ? ? F7 05 ? ? ? ? 00 04 00 00");
 		injector::WriteMemory(pattern.count(1).get(0).get<uint32_t>(11), uint32_t(GamePadButton::X) | uint32_t(GamePadButton::A), true);
 		// Change tool-menu return button to B / Back
-		pattern = hook::pattern("F7 05 ? ? ? ? 00 12 00 00 BE FF FF FF 7F");
+		pattern = re4t::pattern("F7 05 ? ? ? ? 00 12 00 00 BE FF FF FF 7F");
 		injector::WriteMemory(pattern.count(1).get(0).get<uint32_t>(6), uint32_t(GamePadButton::B) | uint32_t(GamePadButton::Back), true);
 		// Allow flag toggle with X/A
-		pattern = hook::pattern("83 C4 ? F7 05 ? ? ? ? 00 04 00 00 74 ? 8B");
+		pattern = re4t::pattern("83 C4 ? F7 05 ? ? ? ? 00 04 00 00 74 ? 8B");
 		injector::WriteMemory(pattern.count(1).get(0).get<uint32_t>(9), uint32_t(GamePadButton::X) | uint32_t(GamePadButton::A), true);
 		// Change flag-menu return button to B/Back
-		pattern = hook::pattern("E8 ? ? ? ? 83 C4 ? F7 05 ? ? ? ? 00 01 00 00 5B");
+		pattern = re4t::pattern("E8 ? ? ? ? 83 C4 ? F7 05 ? ? ? ? 00 01 00 00 5B");
 		injector::WriteMemory(pattern.count(1).get(0).get<uint32_t>(14), uint32_t(GamePadButton::B) | uint32_t(GamePadButton::Back), true);
 		// Allow area jump with X/A/Start
-		pattern = hook::pattern("83 C4 ? F7 05 ? ? ? ? 00 04 00 00 74 ? C6");
+		pattern = re4t::pattern("83 C4 ? F7 05 ? ? ? ? 00 04 00 00 74 ? C6");
 		injector::WriteMemory(pattern.count(1).get(0).get<uint32_t>(9), uint32_t(GamePadButton::X) | uint32_t(GamePadButton::A) | uint32_t(GamePadButton::Start), true);
 		// Change area jump return button to B/Back
-		pattern = hook::pattern("C6 06 02 F7 05 ? ? ? ? 00 01 00 00 74");
+		pattern = re4t::pattern("C6 06 02 F7 05 ? ? ? ? 00 01 00 00 74");
 		injector::WriteMemory(pattern.count(1).get(0).get<uint32_t>(9), uint32_t(GamePadButton::B) | uint32_t(GamePadButton::Back), true);
 	}
 
@@ -499,40 +499,40 @@ void re4t::init::ToolMenu()
 	// very fortunately for us there's a useless instruction just before flag-reading code
 	// patch it to "mov eax, edi; xor edi, 1; nop", to swap which part of 32-bit dword to read from
 	{
-		pattern = hook::pattern("33 FF 85 C0 0F 8E ? ? ? ? 8D 9B 00 00 00 00");
+		pattern = re4t::pattern("33 FF 85 C0 0F 8E ? ? ? ? 8D 9B 00 00 00 00");
 
 		uint8_t patchBytes[] = { 0x89, 0xf8, 0x83, 0xf0, 0x01, 0x90 };
 		injector::WriteMemoryRaw(pattern.count(1).get(0).get<uint32_t>(10), patchBytes, 6, true);
 		// patch read code to use eax register instead of edi
 		injector::WriteMemory(pattern.count(1).get(0).get<uint8_t>(0x19), uint8_t(0x41), true);
 		// patch loop to jump to start of our patched code
-		pattern = hook::pattern("47 C1 F8 04 83 C4 24 3B F8 0F 8C");
+		pattern = re4t::pattern("47 C1 F8 04 83 C4 24 3B F8 0F 8C");
 		int32_t* jmpDest = pattern.count(1).get(0).get<int32_t>(11);
 		injector::WriteMemory(jmpDest, *jmpDest - 6, true);
 	}
 
 	// Fixes for off-screen FlagEdit text
 	{
-		pattern = hook::pattern("6A 00 6A 06 6A F3");
+		pattern = re4t::pattern("6A 00 6A 06 6A F3");
 		injector::WriteMemory(pattern.count(1).get(0).get<uint8_t>(5), uint8_t(13), true);
 
-		pattern = hook::pattern("6A 00 6A 00 6A 00 68 B8 00 00 00");
+		pattern = re4t::pattern("6A 00 6A 00 6A 00 68 B8 00 00 00");
 		injector::WriteMemory(pattern.count(1).get(0).get<uint8_t>(5), uint8_t(13 + 13), true);
 
-		pattern = hook::pattern("6A 00 6A 04 6A 00 68 08 01 00 00");
+		pattern = re4t::pattern("6A 00 6A 04 6A 00 68 08 01 00 00");
 		injector::WriteMemory(pattern.count(1).get(0).get<uint8_t>(5), uint8_t(13 + 13), true);
 
-		pattern = hook::pattern("C1 F8 02 8D 44 38 01");
+		pattern = re4t::pattern("C1 F8 02 8D 44 38 01");
 		injector::WriteMemory(pattern.count(1).get(0).get<uint8_t>(6), uint8_t(3), true);
 
-		pattern = hook::pattern("C1 EA 06 8D 54 0A 01");
+		pattern = re4t::pattern("C1 EA 06 8D 54 0A 01");
 		injector::WriteMemory(pattern.count(1).get(0).get<uint8_t>(6), uint8_t(3), true);
 	}
 
 	// Allow RoomJump 1.1.0 to access stage 0 (test stages)
 	if (GameVersion() == "1.1.0")
 	{
-		pattern = hook::pattern("80 FB 05 7F ? 84 DB 7E ?");
+		pattern = re4t::pattern("80 FB 05 7F ? 84 DB 7E ?");
 		injector::WriteMemory(pattern.count(1).get(0).get<uint8_t>(7), uint8_t(0x7C), true);
 	}
 

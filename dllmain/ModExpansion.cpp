@@ -148,23 +148,23 @@ BOOL __fastcall cEtcTbl__RegistData_Hook(void* thisptr, void* unused, ETS_DATA* 
 void re4t::init::ModExpansion()
 {
 	// Hook ESL-loading functions so we can add extended scale/speed parameters
-	auto pattern = hook::pattern("52 66 89 45 E4 66 89 4D F6 E8");
+	auto pattern = re4t::pattern("52 66 89 45 E4 66 89 4D F6 E8");
 	auto EmSetEvent_thunk = (uint8_t*)injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(9)).as_int();
 	ReadCall(EmSetEvent_thunk, EmSetEvent);
 	InjectHook(EmSetEvent_thunk, EmSetEvent_Hook, HookType::Jump);
 
-	pattern = hook::pattern("6A 01 6A 32 E8 ? ? ? ? 83 C4 20");
+	pattern = re4t::pattern("6A 01 6A 32 E8 ? ? ? ? 83 C4 20");
 	auto EmSetFromList2_thunk = (uint8_t*)injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(4)).as_int();
 	ReadCall(EmSetFromList2_thunk, EmSetFromList2);
 	InjectHook(EmSetFromList2_thunk, EmSetFromList2_Hook, HookType::Jump);
 
-	pattern = hook::pattern("D9 98 7C 03 00 00 8B 42 10");
+	pattern = re4t::pattern("D9 98 7C 03 00 00 8B 42 10");
 	auto EmSetFromList_mov = pattern.count(1).get(0).get<uint8_t>(6);
 	InjectHook(EmSetFromList_mov, EmSetFromList_Hook_Trampoline, HookType::Call);
 
 	// Hook ETS set function so we can update cEm scale value from the ETS data
 	// (why doesn't game do this already? ETS data already has a field specifically for scale...)
-	pattern = hook::pattern("0F B7 46 02 8D 0C 40 56 8D 0C 8D ? ? ? ? E8 ? ? ? ?");
+	pattern = re4t::pattern("0F B7 46 02 8D 0C 40 56 8D 0C 8D ? ? ? ? E8 ? ? ? ?");
 	auto cEtcTbl__RegistData_thunk = (uint8_t*)injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0xF)).as_int();
 	ReadCall(cEtcTbl__RegistData_thunk, cEtcTbl__RegistData);
 	InjectHook(cEtcTbl__RegistData_thunk, cEtcTbl__RegistData_Hook, HookType::Jump);
@@ -172,6 +172,6 @@ void re4t::init::ModExpansion()
 	// Patch ETS-loading func to read EtcModelNo_2 as byte
 	// which gives us a spare byte to use as a flag to change how scale values are read
 	// (game only allows EtcModelNo_2 values 0x40 and below anyway, so the byte was pretty much wasted...)
-	pattern = hook::pattern("51 0F B7 46 02");
+	pattern = re4t::pattern("51 0F B7 46 02");
 	Patch(pattern.count(1).get(0).get<uint8_t>(2), uint8_t(0xB6)); // change "movzx eax, word ptr" -> movzx eax, byte ptr"
 }

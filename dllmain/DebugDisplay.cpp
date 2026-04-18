@@ -307,7 +307,7 @@ void SubScreenCall_Hook()
 void re4t::init::DebugDisplay()
 {
 	// blkPolySphereCkCore: reimplement call to cSat::disp when polygon is collided with
-	auto pattern = hook::pattern("C7 45 F8 01 00 00 00 85 C9");
+	auto pattern = re4t::pattern("C7 45 F8 01 00 00 00 85 C9");
 	struct blkPolySphereCkCore_cSat__disp
 	{
 		void operator()(injector::reg_pack& regs)
@@ -325,9 +325,9 @@ void re4t::init::DebugDisplay()
 
 	// dbg version includes some extra code after SubScreenCall that we need to change pattern for...
 	if (GameVersionIsDebug())
-		pattern = hook::pattern("E8 ? ? ? ? 8B 0D ? ? ? ? BE 00 00 20 00");
+		pattern = re4t::pattern("E8 ? ? ? ? 8B 0D ? ? ? ? BE 00 00 20 00");
 	else
-		pattern = hook::pattern("E8 ? ? ? ? A1 ? ? ? ? 25 00 20 00 00 33 C9");
+		pattern = re4t::pattern("E8 ? ? ? ? A1 ? ? ? ? 25 00 20 00 00 33 C9");
 
 	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint8_t>(0x0)).as_int(), SubScreenCall);
 	InjectHook(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0x0)).as_int(), SubScreenCall_Hook);

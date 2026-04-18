@@ -90,26 +90,26 @@ void __cdecl C_MTXOrtho_cSofdec_hook(Mtx44 mtx, float PosY, float NegY, float Ne
 void re4t::init::AspectRatioTweaks()
 {
 	// messageTrans_messageCamera -> Used in most (all?) text drawn in the user interface
-	auto pattern = hook::pattern("E8 ? ? ? ? 8D 4D ? 6A ? 51 E8 ? ? ? ? 8D 55 ? 52 E8 ? ? ? ? 8D 45 ? 6A ? 50 E8 ? ? ? ? 6A ? E8 ? ? ? ? 8B 4D");
+	auto pattern = re4t::pattern("E8 ? ? ? ? 8D 4D ? 6A ? 51 E8 ? ? ? ? 8D 55 ? 52 E8 ? ? ? ? 8D 45 ? 6A ? 50 E8 ? ? ? ? 6A ? E8 ? ? ? ? 8B 4D");
 	InjectHook(pattern.count(2).get(1).get<uint32_t>(0), C_MTXOrtho_messageTrans_hook);
 
 	// sub_1146150 -> Only used the scale the mouse cursor area, afaik. Same logic as before, so lets just reuse that func
 	InjectHook(pattern.count(2).get(0).get<uint32_t>(0), C_MTXOrtho_messageTrans_hook);
 
 	// sub_1484C50 -> Used to scale some textures that are drawn in the user interface (main menu only?)
-	pattern = hook::pattern("E8 ? ? ? ? 8D 4D ? 6A ? 51 E8 ? ? ? ? 8D 55 ? 52 8D 45 ? 50 8D 4D ? 51 56 E8 ? ? ? ? 8B 4D ? 83 C4");
+	pattern = re4t::pattern("E8 ? ? ? ? 8D 4D ? 6A ? 51 E8 ? ? ? ? 8D 55 ? 52 8D 45 ? 50 8D 4D ? 51 56 E8 ? ? ? ? 8B 4D ? 83 C4");
 	InjectHook(pattern.count(1).get(0).get<uint32_t>(0), C_MTXOrtho_sub_1484C50_hook);
 
 	// DrawTexture -> Used for fullscreen images, such as those that show up when you're reading Files
-	pattern = hook::pattern("E8 ? ? ? ? 8D 4D ? 6A ? 51 E8 ? ? ? ? 8D 95 ? ? ? ? 52");
+	pattern = re4t::pattern("E8 ? ? ? ? 8D 4D ? 6A ? 51 E8 ? ? ? ? 8D 95 ? ? ? ? 52");
 	InjectHook(pattern.count(1).get(0).get<uint32_t>(0), C_MTXOrtho_DrawTexture_hook);
 	
 	// cSofdec::setCamera -> Used for Sofdec videos
-	pattern = hook::pattern("E8 ? ? ? ? 8D 4D ? 6A ? 51 E8 ? ? ? ? 8D 55 ? 52 8D 45 ? 50 8D 4D ? 51 56 E8 ? ? ? ? 8B 4D ? 33 CD");
+	pattern = re4t::pattern("E8 ? ? ? ? 8D 4D ? 6A ? 51 E8 ? ? ? ? 8D 55 ? 52 8D 45 ? 50 8D 4D ? 51 56 E8 ? ? ? ? 8B 4D ? 33 CD");
 	InjectHook(pattern.count(1).get(0).get<uint32_t>(0), C_MTXOrtho_cSofdec_hook);
 
 	// Hook function that sets the BG color (bio4_AddBgColor), so we can make sure it is black when playing videos
-	pattern = hook::pattern("F6 82 ? ? ? ? ? 75 ? B9 ? ? ? ? E8 ? ? ? ? 8B 48");
+	pattern = re4t::pattern("F6 82 ? ? ? ? ? 75 ? B9 ? ? ? ? E8 ? ? ? ? 8B 48");
 	struct AddBgColor_hook
 	{
 		void operator()(injector::reg_pack& regs)
@@ -128,19 +128,19 @@ void re4t::init::AspectRatioTweaks()
 	}; injector::MakeInline<AddBgColor_hook>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(7));
 
 
-	pattern = hook::pattern("DC 0D ? ? ? ? DE F9 D9 5D F8 8B 10 8B 92 ? ? ? ? FF D2 EB 22 8B 0D ? ? ? ? 8D 70 04");
+	pattern = re4t::pattern("DC 0D ? ? ? ? DE F9 D9 5D F8 8B 10 8B 92 ? ? ? ? FF D2 EB 22 8B 0D ? ? ? ? 8D 70 04");
 	static uint32_t* ptrEngineWidthScale = *pattern.count(1).get(0).get<uint32_t*>(2);
 
-	pattern = hook::pattern("D9 05 ? ? ? ? D9 5C 24 04 D9 80 ? ? ? ? D9 1C 24 E8 ? ? ? ? 8B CE E8 ? ? ? ? 8B 46 04");
+	pattern = re4t::pattern("D9 05 ? ? ? ? D9 5C 24 04 D9 80 ? ? ? ? D9 1C 24 E8 ? ? ? ? 8B CE E8 ? ? ? ? 8B 46 04");
 	static uint32_t* ptrAspectRatio = *pattern.count(1).get(0).get<uint32_t*>(2);
 
-	pattern = hook::pattern("DC 0D ? ? ? ? D9 9D ? ? ? ? D9 85 ? ? ? ? D9 5C 24 ? D9 5C 24");
+	pattern = re4t::pattern("DC 0D ? ? ? ? D9 9D ? ? ? ? D9 85 ? ? ? ? D9 5C 24 ? D9 5C 24");
 	static uint32_t* ptrEsp18Height = *pattern.count(1).get(0).get<uint32_t*>(2);
 
-	static uint32_t* ptrMapIconsPos = hook::pattern("DD 05 ? ? ? ? DC C9 D9 C9 D8 6D ? DC 05 ? ? ? ? D9").count(1).get(0).get<uint32_t>(15);
+	static uint32_t* ptrMapIconsPos = re4t::pattern("DD 05 ? ? ? ? DC C9 D9 C9 D8 6D ? DC 05 ? ? ? ? D9").count(1).get(0).get<uint32_t>(15);
 
 	// Hook D3D_SetupPresentationGlobals so we can calculate and write the new aspect ratio values
-	pattern = hook::pattern("A3 ? ? ? ? 89 0D ? ? ? ? 5E 5B 8B E5 5D C3");
+	pattern = re4t::pattern("A3 ? ? ? ? 89 0D ? ? ? ? 5E 5B 8B E5 5D C3");
 	static uintptr_t* ptrResMovAddr = *pattern.count(1).get(0).get<uint32_t*>(1);
 	struct ResChange
 	{

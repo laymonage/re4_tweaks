@@ -266,9 +266,9 @@ void ToolMenu_LightToolMenu()
 
 void LightTool_GetPointers()
 {
-    auto pattern = hook::pattern("55 8B EC 8B 45 08 85 C0 0F 84 ? ? ? ?");
+    auto pattern = re4t::pattern("55 8B EC 8B 45 08 85 C0 0F 84 ? ? ? ?");
     TaskSleep = (TaskSleep_Fn)pattern.count(1).get(0).get<uint8_t>(0);
 
-    pattern = hook::pattern("55 8B EC 8B 45 08 8B 4D 0C 56 8B 35 ? ? ? ?");
+    pattern = re4t::pattern("55 8B EC 8B 45 08 8B 4D 0C 56 8B 35 ? ? ? ?");
     TaskChain = (TaskChain_Fn)pattern.count(1).get(0).get<uint8_t>(0);
 }

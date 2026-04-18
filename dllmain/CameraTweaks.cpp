@@ -91,32 +91,32 @@ void __declspec(naked) knife_r3_set40_hook()
 
 void re4t::init::CameraTweaks()
 {
-	auto pattern = hook::pattern("E8 ? ? ? ? D9 5D EC D9 EE D9 45 EC");
+	auto pattern = re4t::pattern("E8 ? ? ? ? D9 5D EC D9 EE D9 45 EC");
 	InjectHook(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), CameraControl__getCameraPitch_hook, HookType::Jump);
 
-	pattern = hook::pattern("D9 05 ? ? ? ? D9 C0 DE FA D9 C9 74");
+	pattern = re4t::pattern("D9 05 ? ? ? ? D9 C0 DE FA D9 C9 74");
 	C_RANGE_1097 = (float*)*pattern.count(1).get(0).get<uint32_t>(2);
 
-	pattern = hook::pattern("D9 1D ? ? ? ? 8B 8B ? ? ? ? 8B 11 8B 42 ? FF D0 8B B3");
+	pattern = re4t::pattern("D9 1D ? ? ? ? 8B 8B ? ? ? ? 8B 11 8B 42 ? FF D0 8B B3");
 	CamSmth__m_ratio_FC = (float*)*pattern.count(1).get(0).get<uint32_t>(2);
 
-	pattern = hook::pattern("D9 15 ? ? ? ? D9 1D ? ? ? ? C3 CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC 55");
+	pattern = re4t::pattern("D9 15 ? ? ? ? D9 1D ? ? ? ? C3 CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC 55");
 	fCameraPosY = (float*)*pattern.count(1).get(0).get<uint32_t>(2);
 	fCameraPosX = fCameraPosY + 1;
 
-	pattern = hook::pattern("D8 0D ? ? ? ? D9 C9 DE CA DE C1 D9 1D ? ? ? ? D9 05 ? ? ? ? D9");
+	pattern = re4t::pattern("D8 0D ? ? ? ? D9 C9 DE CA DE C1 D9 1D ? ? ? ? D9 05 ? ? ? ? D9");
 	wepPitch = (float*)*pattern.count(1).get(0).get<uint32_t>(2);
 
-	pattern = hook::pattern("D9 05 ? ? ? ? D8 D1 DF E0 D9 05");
+	pattern = re4t::pattern("D9 05 ? ? ? ? D8 D1 DF E0 D9 05");
 	fMousePosX = (float*)*pattern.count(1).get(0).get<uint32_t>(2);
 	fMousePosY = fMousePosX + 1;
 
-	pattern = hook::pattern("A2 ? ? ? ? EB ? DD D8 8B 0D");
+	pattern = re4t::pattern("A2 ? ? ? ? EB ? DD D8 8B 0D");
 	AnalogRX_8 = (int8_t*)*pattern.count(1).get(0).get<uint32_t>(1);
 	AnalogRY_9 = AnalogRX_8 + 1;
 
 	// Hook PadRead to change the camera sensitivity
-	pattern = hook::pattern("74 ? dd 05 ? ? ? ? eb ? dd 05 ? ? ? ? dc f9");
+	pattern = re4t::pattern("74 ? dd 05 ? ? ? ? eb ? dd 05 ? ? ? ? dc f9");
 	struct CameraSens
 	{
 		void operator()(injector::reg_pack& regs)
@@ -136,7 +136,7 @@ void re4t::init::CameraTweaks()
 	}; injector::MakeInline<CameraSens>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(16));
 
 	// Hook CameraSmooth::move to make the camera a bit more responsive
-	pattern = hook::pattern("8B 15 ? ? ? ? D9 42 ? 83 C4 ? E8 ? ? ? ? D9 5D ? D9 45 ? 51 D9 5D");
+	pattern = re4t::pattern("8B 15 ? ? ? ? D9 42 ? 83 C4 ? E8 ? ? ? ? D9 5D ? D9 45 ? 51 D9 5D");
 	struct CSMoveCamDelta
 	{
 		void operator()(injector::reg_pack& regs)
@@ -154,7 +154,7 @@ void re4t::init::CameraTweaks()
 	}; injector::MakeInline<CSMoveCamDelta>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(9));
 
 	// Hook CameraQuasiFPS::checkCameraType to store m_trans_type_1B4, so we can check it inside getCameraPitch
-	pattern = hook::pattern("0F B6 86 ? ? ? ? 8B 94 86 ? ? ? ? 89 96");
+	pattern = re4t::pattern("0F B6 86 ? ? ? ? 8B 94 86 ? ? ? ? 89 96");
 	struct checkCameraTypeHook
 	{
 		void operator()(injector::reg_pack& regs)
@@ -169,7 +169,7 @@ void re4t::init::CameraTweaks()
 	// When aiming, this section changes the float used to populate AnalogRY_9 from absolute value to delta value.
 	// After aiming, that value is never restored to what it was before.
 	// Keeping the value from being changed at all doesn't seem to have any side-effects.
-	pattern = hook::pattern("D9 15 ? ? ? ? D9 15 ? ? ? ? D9 C9 83 FB");
+	pattern = re4t::pattern("D9 15 ? ? ? ? D9 15 ? ? ? ? D9 C9 83 FB");
 	struct PadReadResetXYAim
 	{
 		void operator()(injector::reg_pack& regs)
@@ -196,7 +196,7 @@ void re4t::init::CameraTweaks()
 	}; injector::MakeInline<PadReadResetXYAim>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(12));
 
 	// Same thing happens here.
-	pattern = hook::pattern("D9 85 ? ? ? ? D9 15 ? ? ? ? D9 85 ? ? ? ? D9 15 ? ? ? ? EB");
+	pattern = re4t::pattern("D9 85 ? ? ? ? D9 15 ? ? ? ? D9 85 ? ? ? ? D9 15 ? ? ? ? EB");
 	struct PadReadResetXYAim2
 	{
 		void operator()(injector::reg_pack& regs)
@@ -211,7 +211,7 @@ void re4t::init::CameraTweaks()
 
 	// Replace AnalogRX with a float instead. Provides much smoother camera movement
 	// when using the camera's full range (tweaked C_RANGE_1097 value).
-	pattern = hook::pattern("DB 45 ? D9 5D ? D9 45 ? D9 C0 D9 EE");
+	pattern = re4t::pattern("DB 45 ? D9 5D ? D9 45 ? D9 C0 D9 EE");
 	struct calcDepressionRatioAnalogRX
 	{
 		void operator()(injector::reg_pack& regs)
@@ -240,7 +240,7 @@ void re4t::init::CameraTweaks()
 	}; injector::MakeInline<calcDepressionRatioAnalogRX>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
 	// Same as before, but for the Y
-	pattern = hook::pattern("DB 45 ? D9 05 ? ? ? ? D9 C0 DE FA");
+	pattern = re4t::pattern("DB 45 ? D9 05 ? ? ? ? D9 C0 DE FA");
 	struct calcDepressionRatioAnalogRY
 	{
 		void operator()(injector::reg_pack& regs)
@@ -262,7 +262,7 @@ void re4t::init::CameraTweaks()
 	}; injector::MakeInline<calcDepressionRatioAnalogRY>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(9));
 
 	// Keep fMousePosX at 0 while aiming to avoid possible weirdness.
-	pattern = hook::pattern("D9 9E ? ? ? ? D9 EE 5F D9 9E ? ? ? ? 5E 8B E5 5D C3 83 3D");
+	pattern = re4t::pattern("D9 9E ? ? ? ? D9 EE 5F D9 9E ? ? ? ? 5E 8B E5 5D C3 83 3D");
 	struct calcDepressionRatioKeepXYZero
 	{
 		void operator()(injector::reg_pack& regs)
@@ -287,7 +287,7 @@ void re4t::init::CameraTweaks()
 	}; injector::MakeInline<calcDepressionRatioKeepXYZero>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
 	// Hook CameraControl::Move to freeze fMousePosY/X when needed.
-	pattern = hook::pattern("D9 1D ? ? ? ? 8B 8B ? ? ? ? 8B 11 8B 42 ? FF D0 8B B3");
+	pattern = re4t::pattern("D9 1D ? ? ? ? 8B 8B ? ? ? ? 8B 11 8B 42 ? FF D0 8B B3");
 	struct ccMoveHook
 	{
 		void operator()(injector::reg_pack& regs)
@@ -305,7 +305,7 @@ void re4t::init::CameraTweaks()
 
 	// Hook pl_R1_Walk to provide the option to reset the camera pos when the player starts running.
 	// Only relevant if MouseTurning is off, really.
-	pattern = hook::pattern("c7 86 ? ? ? ? ? ? ? ? c6 86 ? ? ? ? ? db 45");
+	pattern = re4t::pattern("c7 86 ? ? ? ? ? ? ? ? c6 86 ? ? ? ? ? db 45");
 	struct pl_R1_Walk_runReset
 	{
 		void operator()(injector::reg_pack& regs)
@@ -327,7 +327,7 @@ void re4t::init::CameraTweaks()
 	}; injector::MakeInline<pl_R1_Walk_runReset>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(10));
 
 	// Reset AnalogRX_8 and fMousePosX when aiming begins
-	pattern = hook::pattern("8B EC 8B 45 ? 8B 08 89 0D ? ? ? ? 8B 50 ? 89 15 ? ? ? ? 8B 40");
+	pattern = re4t::pattern("8B EC 8B 45 ? 8B 08 89 0D ? ? ? ? 8B 50 ? 89 15 ? ? ? ? 8B 40");
 	struct CamCtrlShoulderSetAimHook
 	{
 		void operator()(injector::reg_pack& regs)
@@ -352,7 +352,7 @@ void re4t::init::CameraTweaks()
 
 	// This section resets the camera X pos to 0 if we turn while walking. 
 	// Maybe useful for controllers(?), but it is getting in our way for KB/M.
-	pattern = hook::pattern("D9 15 ? ? ? ? D9 1D ? ? ? ? EB ? DD D8 A1");
+	pattern = re4t::pattern("D9 15 ? ? ? ? D9 1D ? ? ? ? EB ? DD D8 A1");
 	struct PadReadXreset
 	{
 		void operator()(injector::reg_pack& regs)
@@ -386,7 +386,7 @@ void re4t::init::CameraTweaks()
 
 	// This section resets the camera Y pos to 0 after we stop aiming.
 	// Same deal as before.
-	pattern = hook::pattern("D9 15 ? ? ? ? 83 FB ? 75 ? 83 BD ? ? ? ? ? 75");
+	pattern = re4t::pattern("D9 15 ? ? ? ? 83 FB ? 75 ? 83 BD ? ? ? ? ? 75");
 	struct PadReadYAfterAimReset
 	{
 		void operator()(injector::reg_pack& regs)
@@ -402,7 +402,7 @@ void re4t::init::CameraTweaks()
 	// make sure here that wepPitch is within bounds.
 	// Clamping it inside our getCameraPitch hook doesn't work, because PlWepLockRand does something weird to the value afterwards.
 	// This is just easier.
-	pattern = hook::pattern("D9 15 ? ? ? ? 83 C4 ? D9 05 ? ? ? ? D9 C0 D9 EE DA E9 DF E0 F6 C4 ? 7A ? D9 C9 D9 1D");
+	pattern = re4t::pattern("D9 15 ? ? ? ? 83 C4 ? D9 05 ? ? ? ? D9 C0 D9 EE DA E9 DF E0 F6 C4 ? 7A ? D9 C9 D9 1D");
 	struct PlWepLockCtrlPitchClamp
 	{
 		void operator()(injector::reg_pack& regs)
@@ -421,12 +421,12 @@ void re4t::init::CameraTweaks()
 	}; injector::MakeInline<PlWepLockCtrlPitchClamp>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
 	// Clamp in PlSetLockPitch as well, just to be safe
-	pattern = hook::pattern("D9 15 ? ? ? ? D9 E8 D9 EE DC E9 D9 C2 DE CA DE CA");
+	pattern = re4t::pattern("D9 15 ? ? ? ? D9 E8 D9 EE DC E9 D9 C2 DE CA DE CA");
 	injector::MakeInline<PlWepLockCtrlPitchClamp>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
 	// Customize the camera Y clamping code
-	auto pattern_begin = hook::pattern("D9 05 ? ? ? ? D8 96 ? ? ? ? DF E0 F6 C4 ? 74 ? DD D8");
-	auto pattern_end = hook::pattern("D9 86 ? ? ? ? D9 5D ? D9 45 ? D9 9E");
+	auto pattern_begin = re4t::pattern("D9 05 ? ? ? ? D8 96 ? ? ? ? DF E0 F6 C4 ? 74 ? DD D8");
+	auto pattern_end = re4t::pattern("D9 86 ? ? ? ? D9 5D ? D9 45 ? D9 9E");
 	struct calcDepressionRatio_yClamp
 	{
 		void operator()(injector::reg_pack& regs)
@@ -468,20 +468,20 @@ void re4t::init::CameraTweaks()
 		};
 
 		// wep02_r3_ready00 -> Handguns
-		auto pattern = hook::pattern("83 3D ? ? ? ? ? 75 ? E8 ? ? ? ? 32 C9");
+		auto pattern = re4t::pattern("83 3D ? ? ? ? ? 75 ? E8 ? ? ? ? 32 C9");
 		injector::MakeInline<cmp_jne>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(7));
 
 		// wep07_r3_ready00 -> Shotguns
-		pattern = hook::pattern("39 1D ? ? ? ? 75 2A 88 9E ? ? ? ? 8B 0D ? ? ? ? 8B 41 44");
+		pattern = re4t::pattern("39 1D ? ? ? ? 75 2A 88 9E ? ? ? ? 8B 0D ? ? ? ? 8B 41 44");
 		injector::MakeInline<cmp_jne>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
 		// wep11_r3_ready00 -> Machine guns
-		pattern = hook::pattern("39 1D ? ? ? ? 75 ? C6 86 ? ? ? ? ? 8B 15 ? ? ? ? 0F B6 8A");
+		pattern = re4t::pattern("39 1D ? ? ? ? 75 ? C6 86 ? ? ? ? ? 8B 15 ? ? ? ? 0F B6 8A");
 		injector::MakeInline<cmp_jne>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
 		// wep14_r3_ready00 -> Mine thrower
 		// This one is a bit different. We just need to not let the function set wepPitch to 0.
-		pattern = hook::pattern("D9 15 ? ? ? ? 5F D9 15 ? ? ? ? D9 1D");
+		pattern = re4t::pattern("D9 15 ? ? ? ? 5F D9 15 ? ? ? ? D9 1D");
 		struct wep14_r3_ready00WepPitchReset
 		{
 			void operator()(injector::reg_pack& regs)
@@ -494,13 +494,13 @@ void re4t::init::CameraTweaks()
 		}; injector::MakeInline<wep14_r3_ready00WepPitchReset>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
 		// wep51_r3_ready00 -> PRL 412
-		pattern = hook::pattern("83 3D ? ? ? ? ? DC 0D ? ? ? ? D9 5D ? D9 45 ? D9 15 ? ? ? ? D9 15 ? ? ? ? D9 C9 D9 15 ? ? ? ? 75");
+		pattern = re4t::pattern("83 3D ? ? ? ? ? DC 0D ? ? ? ? D9 5D ? D9 45 ? D9 15 ? ? ? ? D9 15 ? ? ? ? D9 C9 D9 15 ? ? ? ? 75");
 		injector::MakeInline<cmp_jne>(pattern.count(3).get(1).get<uint32_t>(0), pattern.count(3).get(1).get<uint32_t>(7));
 
-		pattern = hook::pattern("83 3D ? ? ? ? ? 0F 85 ? ? ? ? 80 3D ? ? ? ? ? 74 ? A1 ? ? ? ? D9 86 ? ? ? ? 8B 50");
+		pattern = re4t::pattern("83 3D ? ? ? ? ? 0F 85 ? ? ? ? 80 3D ? ? ? ? ? 74 ? A1 ? ? ? ? D9 86 ? ? ? ? 8B 50");
 		injector::MakeInline<cmp_jne>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(7));
 
-		pattern = hook::pattern("D9 15 ? ? ? ? D9 15 ? ? ? ? C6 05 ? ? ? ? ? D9 1D ? ? ? ? 5F");
+		pattern = re4t::pattern("D9 15 ? ? ? ? D9 15 ? ? ? ? C6 05 ? ? ? ? ? D9 1D ? ? ? ? 5F");
 		struct wep51_r3_ready00_3
 		{
 			void operator()(injector::reg_pack& regs)
@@ -513,13 +513,13 @@ void re4t::init::CameraTweaks()
 		}; injector::MakeInline<wep51_r3_ready00_3>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(7));
 
 		// wep28_r3_ready00 -> Krauser's bow
-		pattern = hook::pattern("39 1D ? ? ? ? 75 ? D9 EE 6A ? D9 15 ? ? ? ? 6A");
+		pattern = re4t::pattern("39 1D ? ? ? ? 75 ? D9 EE 6A ? D9 15 ? ? ? ? 6A");
 		injector::MakeInline<cmp_jne>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
 		/*
 		// wep50_r3_ready00 -> Ada's bowgun. ## -->> Disabled because this path doesn't have the 30fps-on-60fps flag enabled, and that
 		// is necessary to avoid a small glitch in the animation. Adding the flag causes even more glitches in the animation, sadly.
-		pattern = hook::pattern("83 3D ? ? ? ? ? 0F 85 ? ? ? ? C6 86 ? ? ? ? ? 80 3D ? ? ? ? ? 74 6F");
+		pattern = re4t::pattern("83 3D ? ? ? ? ? 0F 85 ? ? ? ? C6 86 ? ? ? ? ? 80 3D ? ? ? ? ? 74 6F");
 		struct wep50_r3_ready00
 		{
 			void operator()(injector::reg_pack& regs)
@@ -533,7 +533,7 @@ void re4t::init::CameraTweaks()
 		*/
 
 		// As a workaround to the bowgun issue above, we just skip the bowgun's initial animation.
-		pattern = hook::pattern("6A ? 6A ? E8 ? ? ? ? 83 C4 ? 8B CE E8 ? ? ? ? 85 C0 74 ? C7 86");
+		pattern = re4t::pattern("6A ? 6A ? E8 ? ? ? ? 83 C4 ? 8B CE E8 ? ? ? ? 85 C0 74 ? C7 86");
 		struct wep50_r3_ready10
 		{
 			void operator()(injector::reg_pack& regs)
@@ -552,7 +552,7 @@ void re4t::init::CameraTweaks()
 
 		// wep19_r3_ready00 -> Grenades
 		// Stop it from reseting the Y pos.
-		pattern = hook::pattern("D9 15 ? ? ? ? 6A ? D9 15 ? ? ? ? 6A ? D9 1D ? ? ? ? 6A ? 8B 8E");
+		pattern = re4t::pattern("D9 15 ? ? ? ? 6A ? D9 15 ? ? ? ? 6A ? D9 1D ? ? ? ? 6A ? 8B 8E");
 		struct wep19_r3_ready00
 		{
 			void operator()(injector::reg_pack& regs)
@@ -564,13 +564,13 @@ void re4t::init::CameraTweaks()
 
 		// knife_r3_set40 -> Knife.
 		// The knife doesn't have the alternate Wii path, so we do someting similar to Ada's bowgun workaround from earlier.
-		pattern = hook::pattern("83 C4 ? 85 C0 75 ? 8B 0D ? ? ? ? 8B C1");
+		pattern = re4t::pattern("83 C4 ? 85 C0 75 ? 8B 0D ? ? ? ? 8B C1");
 		injector::MakeNOP(pattern.count(1).get(0).get<uint32_t>(0), 5, true);
 		knife_r3_set40_jmpAddr = pattern.count(1).get(0).get<uintptr_t>(5);
 		injector::MakeJMP(pattern.count(1).get(0).get<uint32_t>(0), knife_r3_set40_hook);
 
 		// Implement quickturning with the knife. Not sure why this isn't a vanilla feature.
-		pattern = hook::pattern("8B 8E ? ? ? ? 80 79 ? ? 7E ? 6A ? E8 ? ? ? ? 6A ? 8B");
+		pattern = re4t::pattern("8B 8E ? ? ? ? 80 79 ? ? 7E ? 6A ? E8 ? ? ? ? 6A ? 8B");
 		struct KnifeQuickTurn
 		{
 			void operator()(injector::reg_pack& regs)
@@ -589,7 +589,7 @@ void re4t::init::CameraTweaks()
 		}; injector::MakeInline<KnifeQuickTurn>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
 		// Hook knife_r3_down00 to make m_Work0_428 0 instead of 1. Keeps the camera/aim position from being reset in certain situations.
-		pattern = hook::pattern("c7 86 ? ? ? ? ? ? ? ? eb ? e8 ? ? ? ? 8b 75");
+		pattern = re4t::pattern("c7 86 ? ? ? ? ? ? ? ? eb ? e8 ? ? ? ? 8b 75");
 		struct knife_r3_down00_Work
 		{
 			void operator()(injector::reg_pack& regs)
@@ -604,7 +604,7 @@ void re4t::init::CameraTweaks()
 		}; injector::MakeInline<knife_r3_down00_Work>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(10));
 
 		// Keep the knife from writing 0 to Stick*Float when the animation ends
-		pattern = hook::pattern("D9 15 ? ? ? ? 89 0D ? ? ? ? D9 15 ? ? ? ? 89 0D ? ? ? ? 89 0D");
+		pattern = re4t::pattern("D9 15 ? ? ? ? 89 0D ? ? ? ? D9 15 ? ? ? ? 89 0D ? ? ? ? 89 0D");
 		struct PadReadKnifeResetX
 		{
 			void operator()(injector::reg_pack& regs)
@@ -616,7 +616,7 @@ void re4t::init::CameraTweaks()
 			}
 		}; injector::MakeInline<PadReadKnifeResetX>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
-		pattern = hook::pattern("D9 15 ? ? ? ? 89 0D ? ? ? ? 89 0D ? ? ? ? 66 C7 05 ? ? ? ? ? ? 66");
+		pattern = re4t::pattern("D9 15 ? ? ? ? 89 0D ? ? ? ? 89 0D ? ? ? ? 66 C7 05 ? ? ? ? ? ? 66");
 		struct PadReadKnifeResetY
 		{
 			void operator()(injector::reg_pack& regs)

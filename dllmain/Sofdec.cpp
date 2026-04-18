@@ -121,16 +121,16 @@ bool __fastcall cSofdec__Initialize_hook(void* thisptr, void* unused, char* fnam
 void GetSofdecPointers()
 {
 	// SFD
-	auto pattern = hook::pattern("E8 ? ? ? ? A1 ? ? ? ? 81 88 ? ? ? ? ? ? ? ? 8B CE E8 ? ? ? ? 53");
+	auto pattern = re4t::pattern("E8 ? ? ? ? A1 ? ? ? ? 81 88 ? ? ? ? ? ? ? ? 8B CE E8 ? ? ? ? 53");
 	ptrcSofdec__startApp = injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int();
 
-	pattern = hook::pattern("E8 ? ? ? ? 50 89 46 1C 8B 15 ? ? ? ? 6A");
+	pattern = re4t::pattern("E8 ? ? ? ? 50 89 46 1C 8B 15 ? ? ? ? 6A");
 	ptrmwPlyCalcWorkCprmSfd = (uintptr_t)pattern.count(1).get(0).get<uintptr_t>(0);
 
-	pattern = hook::pattern("E8 ? ? ? ? EB 08 7E 06 40 A3 ? ? ? ? 83 3D ? ? ? ? ? 7E 31");
+	pattern = re4t::pattern("E8 ? ? ? ? EB 08 7E 06 40 A3 ? ? ? ? 83 3D ? ? ? ? ? 7E 31");
 	ptrcSofdec__finishMovie = injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int();
 
-	pattern = hook::pattern("8B 15 ? ? ? ? 81 C2 ? ? ? ? 6A ? 51 89 56 ? E8 ? ? ? ? 8B 4E");
+	pattern = re4t::pattern("8B 15 ? ? ? ? 81 C2 ? ? ? ? 6A ? 51 89 56 ? E8 ? ? ? ? 8B 4E");
 	ptrMemPoolMovie = injector::ReadMemory<uint32_t*>(pattern.count(1).get(0).get<uint32_t*>(2), true);
 }
 
@@ -141,21 +141,21 @@ void re4t::init::Sofdec()
 	if (re4t::cfg->bRestoreDemoVideos)
 	{
 		// Hook both cSofdec::Initialize calls in routine 7 inside titleMain so we can play GC demo videos, if they exist in BIO4/movies
-		auto pattern = hook::pattern("E8 ? ? ? ? FE 46 ? E9 ? ? ? ? 68 ? ? ? ? E8 ? ? ? ? FE");
+		auto pattern = re4t::pattern("E8 ? ? ? ? FE 46 ? E9 ? ? ? ? 68 ? ? ? ? E8 ? ? ? ? FE");
 		ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), cSofdec__Initialize_orig);
 		InjectHook(pattern.count(1).get(0).get<uint32_t>(0), cSofdec__Initialize_hook, HookType::Call);
 		InjectHook(pattern.count(1).get(0).get<uint32_t>(18), cSofdec__Initialize_hook, HookType::Call);
 
 		// Nop call to FadeKill that is messing with our custom fade
-		pattern = hook::pattern("E8 ? ? ? ? 68 ? ? ? ? 68 ? ? ? ? E8 ? ? ? ? A1 ? ? ? ? 83 C4 ? 53");
+		pattern = re4t::pattern("E8 ? ? ? ? 68 ? ? ? ? 68 ? ? ? ? E8 ? ? ? ? A1 ? ? ? ? 83 C4 ? 53");
 		injector::MakeNOP(pattern.count(1).get(0).get<uint32_t>(0), 5, true);
 
 		// Get the address of the instruction that sets the next routine to be executed after demo videos are done playing
-		static auto pattern_nextRno1_1 = hook::pattern("C6 46 ? ? E9 ? ? ? ? 53 E8 ? ? ? ? 83 C4 ? 3C ? 0F 85").count(1).get(0).get<uint32_t>(3);
+		static auto pattern_nextRno1_1 = re4t::pattern("C6 46 ? ? E9 ? ? ? ? 53 E8 ? ? ? ? 83 C4 ? 3C ? 0F 85").count(1).get(0).get<uint32_t>(3);
 
 		// Hook titleStart to have a new demo video timer running in the "press any key" screen.
 		// This is not how it worked on the GC, since there wasn't a "press any key" screen there. Figured we should add it here regardless.
-		pattern = hook::pattern("D9 05 ? ? ? ? 51 D9 1C ? 68 ? ? ? ? 8B C8");
+		pattern = re4t::pattern("D9 05 ? ? ? ? 51 D9 1C ? 68 ? ? ? ? 8B C8");
 		struct titleStart_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -217,7 +217,7 @@ void re4t::init::Sofdec()
 		}; injector::MakeInline<titleStart_hook>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
 		// Hook titleMain to have a new demo video timer running in the main menu screen.
-		pattern = hook::pattern("88 98 ? ? ? ? 8D 47 ? 83 C4 ? 83 F8");
+		pattern = re4t::pattern("88 98 ? ? ? ? 8D 47 ? 83 C4 ? 83 F8");
 		struct titleMain_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -292,7 +292,7 @@ void re4t::init::Sofdec()
 	InjectHook(ptrcSofdec__finishMovie, cSofdec__finishMovie_Hook);
 
 	// Get resolution and calculate new position
-	auto pattern = hook::pattern("A3 ? ? ? ? 89 0D ? ? ? ? DB 45 ? 0F B7 0D");
+	auto pattern = re4t::pattern("A3 ? ? ? ? 89 0D ? ? ? ? DB 45 ? 0F B7 0D");
 	ptrSFDMovAddr = *pattern.count(1).get(0).get<uint32_t*>(1);
 	struct SFDRes
 	{
@@ -326,7 +326,7 @@ void re4t::init::Sofdec()
 	}; injector::MakeInline<SFDRes>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5));
 
 	// Write new pointers to cSofdec::setCamera
-	pattern = hook::pattern("D9 05 ? ? ? ? D9 5C 24 ? D9 05 ? ? ? ? D9 5C 24 ? D9 05 ? ? ? ? D9 5C 24 ? D9 05 ? ? ? ? D9 1C ? 50 E8 ? ? ? ? 8D 4D ? 6A ? 51 E8 ? ? ? ? 8D 55 ? 52 8D 45 ? 50 8D 4D ? 51 56 E8 ? ? ? ? 8B 4D ? 33 CD");
+	pattern = re4t::pattern("D9 05 ? ? ? ? D9 5C 24 ? D9 05 ? ? ? ? D9 5C 24 ? D9 05 ? ? ? ? D9 5C 24 ? D9 05 ? ? ? ? D9 1C ? 50 E8 ? ? ? ? 8D 4D ? 6A ? 51 E8 ? ? ? ? 8D 55 ? 52 8D 45 ? 50 8D 4D ? 51 56 E8 ? ? ? ? 8B 4D ? 33 CD");
 	injector::WriteMemory(pattern.get_first(2), &newMovPosX, true);
 	injector::WriteMemory(pattern.get_first(12), &newMovNegX, true);
 	injector::WriteMemory(pattern.get_first(32), &newMovPosY, true);

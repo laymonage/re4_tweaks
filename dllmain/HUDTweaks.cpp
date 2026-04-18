@@ -153,7 +153,7 @@ void re4t::init::HUDTweaks()
 {
 	// Life meter HUD tweaks
 	{
-		auto pattern = hook::pattern("56 50 B9 ? ? ? ?  E8 ? ? ? ? 80 26 F7");
+		auto pattern = re4t::pattern("56 50 B9 ? ? ? ?  E8 ? ? ? ? 80 26 F7");
 		struct BulletInfo__roomInit_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -182,7 +182,7 @@ void re4t::init::HUDTweaks()
 			}
 		}; injector::MakeInline<BulletInfo__roomInit_hook>(pattern.count(1).get(0).get<uint32_t>(2), pattern.count(1).get(0).get<uint32_t>(7));
 
-		pattern = hook::pattern("8B ? ? 51 50 B9 ? ? ? ? E8 ? ? ? ? EB");
+		pattern = re4t::pattern("8B ? ? 51 50 B9 ? ? ? ? E8 ? ? ? ? EB");
 		struct BulletInfo__move_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -198,7 +198,7 @@ void re4t::init::HUDTweaks()
 
 	// Shrink action button prompts
 	{
-		auto pattern = hook::pattern("03 C2 50 B9 ? ? ? ? E8 ? ? ? ? C7");
+		auto pattern = re4t::pattern("03 C2 50 B9 ? ? ? ? E8 ? ? ? ? C7");
 		static uint32_t* g_IDSystemSetException = *pattern.count(1).get(0).get<uint32_t*>(15);
 		struct ActionButton__move_hook
 		{
@@ -220,7 +220,7 @@ void re4t::init::HUDTweaks()
 			}
 		}; injector::MakeInline<ActionButton__move_hook>(pattern.count(1).get(0).get<uint32_t>(13), pattern.count(1).get(0).get<uint32_t>(23));
 
-		pattern = hook::pattern("8D 53 16 52 B9 ? ? ? ? E8");
+		pattern = re4t::pattern("8D 53 16 52 B9 ? ? ? ? E8");
 		struct cActionButton__disp_hook
 		{
 			void operator()(injector::reg_pack& regs)
@@ -236,7 +236,7 @@ void re4t::init::HUDTweaks()
 
 	// Hide zoom control hints from the weapon scope and binocular HUDs
 	{
-		auto pattern = hook::pattern("80 B8 C0 4F 00 00 0E 56 57 8B F9 0F");
+		auto pattern = re4t::pattern("80 B8 C0 4F 00 00 0E 56 57 8B F9 0F");
 		struct IdScope__move_HideZoomHints
 		{
 			void operator()(injector::reg_pack& regs)
@@ -258,7 +258,7 @@ void re4t::init::HUDTweaks()
 			}
 		}; injector::MakeInline<IdScope__move_HideZoomHints>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(7));
 
-		pattern = hook::pattern("F7 81 1C 50 00 00 00 10 00 00");
+		pattern = re4t::pattern("F7 81 1C 50 00 00 00 10 00 00");
 		struct IdBinocular__move_HideZoomHints
 		{
 			void operator()(injector::reg_pack& regs)

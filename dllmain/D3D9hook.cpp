@@ -81,7 +81,7 @@ static IDirect3D9* WINAPI hook_Direct3DCreate9(UINT SDKVersion)
 
 void re4t::init::D3D9Hook()
 {
-	auto pattern = hook::pattern("E8 ? ? ? ? A3 ? ? ? ? 85 C0 75 17");
+	auto pattern = re4t::pattern("E8 ? ? ? ? A3 ? ? ? ? 85 C0 75 17");
 
 	ReadCall(pattern.count(1).get(0).get<uint32_t>(0), orgDirect3DCreate9);
 	InjectHook(pattern.count(1).get(0).get<uint32_t>(0), hook_Direct3DCreate9);

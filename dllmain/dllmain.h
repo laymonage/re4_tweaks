@@ -8,11 +8,11 @@
 #include <injector\hooking.hpp>
 #include <injector\assembly.hpp>
 #include <injector\utility.hpp>
-#include <Patterns.h>
 #include <MemoryMgr.h>
 #include <log.h>
 #include <filesystem>
 #include <string>
+#include "Sections.h"
 
 using namespace Memory::VP;
 
